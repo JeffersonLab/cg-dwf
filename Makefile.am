@@ -2,7 +2,8 @@
 # The main header files. dwf-tables.h 
 # I put dwf.c here because it contains macros and inline stuff and is really meand for
 # inclusion. Perhaps dwf.h would have been a better name
-CODE_HDRS = dwf-tables.h \
+CODE_HDRS = cg-dwf-config.h \
+	    dwf-tables.h \
 	    dwf.c
 
 # --------------- SSE headers and sources ----------------
