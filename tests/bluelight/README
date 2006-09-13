@@ -1,0 +1,5 @@
+This directory contains BG/L specific tests.
+
+bl.c    -- checking if vec_mk10() works properly.
+main.c  -- the driver.
+

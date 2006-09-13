@@ -1,0 +1,2 @@
+Sep 13, 2006: Initial autoconf/automake. Non invasive to the source, just 
+adds some extra files.

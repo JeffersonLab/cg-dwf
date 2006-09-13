@@ -1,0 +1,38 @@
+These are install instructions for the autoconf/automake based system.
+
+1) First configure your source using the configure script. Currently 
+there is support for the following flags
+
+--prefix=<prefix>    A place to install the built library
+--enable-cpu-arch=<cpuarch> Select the kind of build. The following builds
+			    are available: sse, bluelight, altivec
+			    In each case both single and double prec
+			    are built, with the exception of altivec for 
+			    which there is only single precision.
+
+--with-qmp=<qmp-top>  Specify a location to the QMP to use.
+
+You can see this information by typing: ./configure at any time
+
+Eg: ./configure --prefix=/usr/local/cg-dwf-1.3.0 \
+	        --enable-cpu-arch=sse \
+	        --with-qmp=/home/bj/Devel/QCD/instal/qmp/HEAD/single
+
+
+2) Build the library by running 'make'
+
+3) Install the library by running 'make install'
+
+The relevant header files will be copied to 
+
+	prefix/include
+
+and the library (libcg-dwf.a) will be installed in 
+
+	prefix/lib
+
+and a script called cg-dwf-config will be installed in 
+
+	prefix/bin
+
+Thereafter cg-dwf-config can be used to discover compiler and link flags

@@ -1,0 +1,140 @@
+#!/bin/sh
+
+# cg-dwf-config
+#
+# Tool for retrieving configuration information about the installed version
+# of QDP.
+#
+
+prefix="@prefix@"
+prefix_set=no
+
+version="@VERSION@"
+
+cg_dwf_cc="@CC@"
+cg_dwf_cflags="@CFLAGS@ @DWF_CFLAGS@ @QMP_CFLAGS@"
+
+cg_dwf_ldflags="@LDFLAGS@ @QMP_LDFLAGS@"
+cg_dwf_libs="-lcg-dwf @LIBS@ @QMP_LIBS@"
+
+
+cg_dwf_ranlib="@RANLIB@"
+cg_dwf_ar="@AR@"
+
+cg_dwf_cpuarch=@DWF_CPUARCH@
+
+cg_dwf_baseincludedir=@includedir@
+cg_dwf_baselibdir=@libdir@
+
+usage()
+{
+  cat <<EOF
+Usage: cg-dwf-config [OPTIONS]
+Options:
+  [--prefix[=DIR]]
+  [--version]
+  [--cc]
+  [--cflags]
+  [--ldflags]
+  [--libs]
+  [--ranlib]
+  [--ar]
+  [--cpu-arch]
+EOF
+  exit $1
+}
+
+if test $# -eq 0; then
+  usage 1 1>&2
+fi
+
+while test $# -gt 0; do
+  case "$1" in
+    -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+    *)    optarg= ;;
+  esac
+
+  case $1 in
+    --prefix=*)
+      prefix=$optarg
+      prefix_set=yes
+      ;;
+
+    --prefix)
+      echo_prefix=yes
+      ;;
+
+    --version)
+      echo $version
+      ;;
+
+    --cpu-arch)
+      echo $cg_dwf_cpuarch
+      ;;
+
+    --cc)
+      echo $cg_dwf_cc
+      ;;
+
+    --cflags)
+      echo_cflags=yes
+      ;;
+
+    --ldflags)
+      echo_ldflags=yes
+      ;;
+
+    --libs)
+      echo_libs=yes
+      ;;
+
+    --ranlib)
+       echo ${cg_dwf_ranlib}
+       ;;
+    --ar)
+       echo ${cg_dwf_ar}
+       ;;
+    *)
+      usage 1 1>&2
+      ;;
+
+  esac
+  shift
+done
+
+if test "X${echo_prefix}X" = "XyesX" ; then
+  echo $prefix
+fi
+
+if test "X${echo_cflags}X" = "XyesX" ; then
+  output_cflags=$cg_dwf_cflags
+  if test "X${prefix_set}X" = "XyesX" ; then 
+      if test "X${prefix}X" = "X.X"; then 
+	  output_cflags=${output_cflags}" -I"${prefix}
+      else 
+	  output_cflags=${output_cflags}" -I"${prefix}"/include"
+      fi
+  else
+      output_cflags=${output_cflags}" -I"${cg_dwf_baseincludedir}
+  fi
+  echo $output_cflags
+fi
+
+if test "X${echo_ldflags}X" = "XyesX" ; then
+  output_ldflags=$cg_dwf_ldflags
+  if test "X${prefix_set}X" = "XyesX" ; then 
+      if test "X${prefix}X" = "X.X"; then
+	  output_ldflags=${output_ldflags}" -L"${prefix}
+      else 
+          output_ldflags=${output_ldflags}" -L"${prefix}"/lib"
+      fi
+  else
+      output_ldflags=${output_ldflags}" -L"${cg_dwf_baselibdir}
+  fi
+  echo $output_ldflags
+fi
+
+if test "X${echo_libs}X" = "XyesX" ; then
+  output_libs=$cg_dwf_libs
+  echo $output_libs
+fi

@@ -1,0 +1,15 @@
+lattice 8 8 8 16 16
+M5         = 10
+m_f        = 0.1
+epsilon    = 1e-30
+iterations = 500
+sites per node 8192
+block [1 1 1 1]
+QMP m0,n1@honti2: DWF init: DWF Version 1.3.0ef
+
+L3 DWF solver: status = 0, iterations=142, epsilon=8.90122e-31
+L3 DWF time: 49.5825 sec, 142 iterations, 16 Ls
+L3 DWF true residue squared: 8.06919e-14
+L3 DWF rhs normalization: 3.14518e+06
+L3 DWF residue normalized: 2.56558e-20
+L3 DWF perf: 1270.07 Mflops, l 8 8 8 16 16  n 1 1 1 1

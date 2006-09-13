@@ -1,0 +1,29 @@
+#!/bin/sh -x
+
+if [ $# -ne 3 ]; then
+    echo usage: run-me block size mode
+    exit 1
+fi
+
+block="$1"
+size="$2"
+mode="$3"
+
+for n in `seq 0 5`; do
+    for lx in 8 12 16 20 24 32; do
+        lt=`expr $lx \* 2`
+        case $mode in
+          vn) lz=$lt
+              ;;
+          *) lz=$lx
+              ;;
+        esac
+        for ls in 4 6 8 10 12 16 32; do
+            echo runing $lx $lt $ls on $block $size $mode
+            mpirun -partition $block -mode $mode -np $size -cwd `pwd` \
+                   -exe `pwd`/cg-solver \
+                   -args "$lx $lx $lz $lt $ls 10.1243 0.10345 1e-10 1000" |\
+               tee data/${mode}$block.$lx.$ls.$n
+        done
+    done
+done

@@ -1,0 +1,38 @@
+This directory contains a QDP wrapper and the timing code for the inverter.
+It also contains various test codes for verifying correctness of the inverter.
+
+Interesting files:
+
+results of inverting U=1, by running cg-solver1 as follows:
+   ./cg-solver1.. 8 8 8 16 16 10 0.1 1e-30 500
+8-3-16-2-1-altivecf-single
+8-3-16-2-1-ssed-single
+8-3-16-2-1-ssef-single
+
+results of random U, by running cg-solver as follows:
+   ./cg-solver.. 8 8 8 16 16 10 0.1 1e-30 500
+8-3-16-2-altivecf-single
+8-3-16-2-ssed-single
+8-3-16-2-ssef-single
+
+Makefile
+README
+cg-solver.c     -- QDP/C sample with random U
+cg-solver1.c    -- QDP/C sample with U=1
+dwf-op.c        -- DWF Dirac Operator with U=1
+dwf-run          -- script for applying DWF DO on misc lattice positions
+dwf-run-s        -- same along the S direction
+
+Results of applying DWF U=1  (running dwf-run)
+op-altivecf.res
+op-ssed.res
+op-ssef.res
+
+Some timing results for internal use only
+results
+
+Another script for tests
+run-me
+
+Result of stopping at different number of iterations, unknown lattice size
+ssed-test
