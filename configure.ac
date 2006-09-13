@@ -1,6 +1,8 @@
 AC_INIT(cg-dwf, 1.3.1, [avp@lns.mit.edu])
 AC_CONFIG_AUX_DIR(autoconfdir)
 
+AC_CANONICAL_HOST
+
 AC_LANG([C])
 AC_PROG_RANLIB
 AC_CHECK_TOOL(AR, ar, [ar])
@@ -8,8 +10,10 @@ AM_INIT_AUTOMAKE
 
 AC_PROG_CC(gcc)
 
-AC_ARG_ENABLE(cpu-arch,
-	AC_HELP_STRING([--enable-cpu-arch=cpuarch cpuarc=sse,bluelight,altivec]),
+AC_CONFIG_HEADERS([cg-dwf-config-internal.h])
+
+AC_ARG_ENABLE(cg-dwf-cpu-arch,
+	AC_HELP_STRING([--enable-cg-dwf-cpu-arch=cpuarch cpuarc=sse,bluelight,altivec]),
 	[ac_ARCH=${enableval}],
 	[ac_ARCH="sse"]
 )
