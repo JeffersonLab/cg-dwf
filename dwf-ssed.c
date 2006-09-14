@@ -5,7 +5,9 @@
 #line 4398 "dwf.nw"
 #define Vs 2
 typedef double REAL;
-typedef double __attribute__((mode(V2DF),aligned(16))) vReal;
+/* typedef double __attribute__((mode(V2DF),aligned(16))) vReal; */
+#include <xmmintrin.h>
+typedef __m128d vReal;
 #line 4227 "dwf.nw"
 typedef struct {
     float re, im;
