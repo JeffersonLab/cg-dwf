@@ -5,7 +5,8 @@
 #line 4254 "dwf.nw"
 #define Vs 4
 typedef float REAL;
-typedef REAL vReal __attribute__((mode(V4SF),aligned(16)));
+#include <xmmintrin.h>
+typedef __m128 vReal;
 #line 4227 "dwf.nw"
 typedef struct {
     float re, im;
@@ -14,16 +15,16 @@ typedef struct {
 typedef struct {
    vReal re, im;
 } vector_complex;
-#line 4263 "dwf.nw"
+#line 4264 "dwf.nw"
 static inline vReal
 vmk_1(double a)                                        /* return (a a ... a) */
 {
      float b = a;
-     vReal v = __builtin_ia32_loadss((float *)&b);
+     vReal v = _mm_load_ss((float *)&b);
      asm("shufps\t$0,%0,%0" : "+x" (v));
      return v;
 }
-#line 4275 "dwf.nw"
+#line 4276 "dwf.nw"
 static inline vReal
 vmk_n1(double a, double b)                             /* return (a ... a b) */
 {
@@ -32,7 +33,7 @@ vmk_n1(double a, double b)                             /* return (a ... a b) */
   r[0] = a; r[1] = a; r[2] = a; r[3] = b;
   return v;
 }
-#line 4287 "dwf.nw"
+#line 4288 "dwf.nw"
 static inline vReal
 vmk_1n(double a, double b)                             /* return (a b ... b) */
 {
@@ -41,7 +42,7 @@ vmk_1n(double a, double b)                             /* return (a b ... b) */
   r[0] = a; r[1] = b; r[2] = b; r[3] = b;
   return v;
 }
-#line 4300 "dwf.nw"
+#line 4301 "dwf.nw"
 static inline vReal
 vmk_fn(double a, double b)                  /* return (a a*b ... a*b^(Vs-1)) */
 {
@@ -50,7 +51,7 @@ vmk_fn(double a, double b)                  /* return (a a*b ... a*b^(Vs-1)) */
   r[0] = a; r[1] = a*b; r[2] = a*b*b; r[3] = a*b*b*b;
   return v;
 }
-#line 4311 "dwf.nw"
+#line 4312 "dwf.nw"
 static inline vReal
 vmk_bn(double a, double b)                  /* return (a^(Vs-1)*b ... a*b b) */
 {
@@ -59,14 +60,14 @@ vmk_bn(double a, double b)                  /* return (a^(Vs-1)*b ... a*b b) */
   r[0] = a*a*a*b; r[1] = a*a*b; r[2] = a*b; r[3] = b;
   return v;
 }
-#line 4323 "dwf.nw"
+#line 4324 "dwf.nw"
 static inline double
 vsum(vReal v)                                         /* return sum(i, [i]v) */
 {
   REAL *r = (REAL *)&v;
   return r[0] + r[1] + r[2] + r[3];
 }
-#line 4333 "dwf.nw"
+#line 4334 "dwf.nw"
 static inline vReal
 vput_0(vReal a, double b)                     /* return (b [1]a ... [Vs-1]a) */
 {
@@ -74,7 +75,7 @@ vput_0(vReal a, double b)                     /* return (b [1]a ... [Vs-1]a) */
    v[0] = b;
    return a;
 }
-#line 4344 "dwf.nw"
+#line 4345 "dwf.nw"
 static inline vReal
 vput_n(vReal a, double b)                     /* return ([0]a ... [Vs-2]a b) */
 {
@@ -82,7 +83,7 @@ vput_n(vReal a, double b)                     /* return ([0]a ... [Vs-2]a b) */
    v[3] = b;
    return a;
 }
-#line 4356 "dwf.nw"
+#line 4357 "dwf.nw"
 static inline vReal
 shift_up1(vReal a, vReal b)                /* return ([1]a ... [Vs-1]a [0]b) */
 {
@@ -93,7 +94,7 @@ shift_up1(vReal a, vReal b)                /* return ([1]a ... [Vs-1]a [0]b) */
        : "+x" (x), "+x" (y));
    return x;
 }
-#line 4369 "dwf.nw"
+#line 4370 "dwf.nw"
 static inline vReal
 shift_upN(vReal a, vReal b)             /* return ([Vs-1]a [0]b ... [Vs-2]b) */
 {
