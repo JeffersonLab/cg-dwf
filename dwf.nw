@@ -4398,7 +4398,8 @@ needed to access SSE units.
 <<SSE double precision types>>=
 #define Vs 2
 typedef double REAL;
-typedef double __attribute__((mode(V2DF),aligned(16))) vReal;
+#include <xmmintrin.h>
+typedef __m128d vReal; 
 <<Usual complex types>>
 @
 
