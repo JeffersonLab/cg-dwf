@@ -8,6 +8,7 @@ COPT     = "<(COPT)>"
 CINCDIRS = "<(CINCDIRS)>"
 OBJECT   = "<object name>"
 SOURCE   = "<source name>"
+NOWEBDIR = /usr/local/noweb
 
 include $(CONFIG)
 
@@ -66,16 +67,16 @@ $(f.dvi): %.dvi: %.tex
 	latex $<
 
 $(f.tex): %.tex: %.nw
-	noweave -index -latex -delay $< > $@
+	$(NOWEBDIR)/noweave -index -latex -delay $< > $@
 
 $(interface.h): %.h: interface.nw
-	notangle $(TFLAGS) -R$@ -c $< > $@ \
+	$(NOWEBDIR)/notangle $(TFLAGS) -R$@ -c $< > $@ \
 	|| (rm -f $@ ; exit 1)
 
 $(code.c): %.c: dwf.nw
-	notangle $(TFLAGS) -R$@ -c $< > $@ \
+	$(NOWEBDIR)/notangle $(TFLAGS) -R$@ -c $< > $@ \
 	|| (rm -f $@ ; exit 1)
 
 $(code.h): %.h: dwf.nw
-	notangle $(TFLAGS) -R$@ -c $< > $@ \
+	$(NOWEBDIR)/notangle $(TFLAGS) -R$@ -c $< > $@ \
 	|| (rm -f $@ ; exit 1)
