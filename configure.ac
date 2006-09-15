@@ -8,8 +8,6 @@ AC_PROG_RANLIB
 AC_CHECK_TOOL(AR, ar, [ar])
 AM_INIT_AUTOMAKE
 
-AC_PROG_CC(gcc)
-
 AC_CONFIG_HEADERS([cg-dwf-config-internal.h])
 
 AC_ARG_ENABLE(cg-dwf-cpu-arch,
@@ -29,14 +27,17 @@ AC_ARG_WITH(qmp,
 case ${ac_ARCH} in
 sse)
 	AC_MSG_NOTICE([Configuring for SSE architecture])
+	AC_PROG_CC(gcc)
 	DWF_CFLAGS="-Wall -msse2 -DUSE_QMP2"
 	;;
 bluelight)
 	AC_MSG_NOTICE([Configuring for BlueLight architecture])
+	AC_PROG_CC(bgl-gcc gcc)
 	DWF_CFLAGS="-Wall -DUSE_QMP2"
 	;;
 altivec)
 	AC_MSG_NOTICE([Configuring for AltiVec architecture])
+	AC_PROG_CC(gcc)
 	DWF_CFLAGS="-Wall -maltivec -DUSE_QMP2"
 	;;
 *)
