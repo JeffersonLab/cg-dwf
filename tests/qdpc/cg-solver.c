@@ -241,7 +241,7 @@ solve(QDP_DiracFermion **solution,
     
     for (i = 0; i < 4; i++) {
 	xV[i] = QDP_create_M();
-	QDP_M_eq_sM(xV[i], xU[i], QDP_neighbor[i], QDP_forward, QDP_all);
+	QDP_M_eq_sM(xV[i], xU[i], QDP_neighbor[i], QDP_backward, QDP_all);
     }
 
     QDP_suspend_comm();

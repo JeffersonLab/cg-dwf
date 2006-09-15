@@ -1,13 +1,14 @@
-#line 4215 "dwf.nw"
+#line 4283 "dwf.nw"
 #define Nc  3      /* Number of colors */
 #define DIM 4      /* number of dimensions */
 #define Fd  4      /* Fermion representation dimension */
-#line 4399 "dwf.nw"
+#line 4471 "dwf.nw"
 #define Vs 2
 typedef double REAL;
+/* typedef double __attribute__((mode(V2DF),aligned(16))) vReal; */
 #include <xmmintrin.h>
-typedef __m128d vReal; 
-#line 4227 "dwf.nw"
+typedef __m128d vReal;
+#line 4295 "dwf.nw"
 typedef struct {
     float re, im;
 } scalar_complex;
@@ -15,7 +16,7 @@ typedef struct {
 typedef struct {
    vReal re, im;
 } vector_complex;
-#line 4409 "dwf.nw"
+#line 4482 "dwf.nw"
 static inline vReal
 vmk_1(double a)                                        /* return (a a ... a) */
 {
@@ -24,7 +25,7 @@ vmk_1(double a)                                        /* return (a a ... a) */
      w[0] = w[1] = a;
      return v;
 }
-#line 4421 "dwf.nw"
+#line 4494 "dwf.nw"
 static inline vReal
 vmk_n1(double a, double b)                             /* return (a ... a b) */
 {
@@ -33,7 +34,7 @@ vmk_n1(double a, double b)                             /* return (a ... a b) */
   r[0] = a; r[1] = b;
   return v;
 }
-#line 4433 "dwf.nw"
+#line 4506 "dwf.nw"
 static inline vReal
 vmk_1n(double a, double b)                             /* return (a b ... b) */
 {
@@ -42,7 +43,7 @@ vmk_1n(double a, double b)                             /* return (a b ... b) */
   r[0] = a; r[1] = b;
   return v;
 }
-#line 4446 "dwf.nw"
+#line 4519 "dwf.nw"
 static inline vReal
 vmk_fn(double a, double b)                  /* return (a a*b ... a*b^(Vs-1)) */
 {
@@ -51,7 +52,7 @@ vmk_fn(double a, double b)                  /* return (a a*b ... a*b^(Vs-1)) */
   r[0] = a; r[1] = a*b;
   return v;
 }
-#line 4457 "dwf.nw"
+#line 4530 "dwf.nw"
 static inline vReal
 vmk_bn(double a, double b)                  /* return (a^(Vs-1)*b ... a*b b) */
 {
@@ -60,14 +61,14 @@ vmk_bn(double a, double b)                  /* return (a^(Vs-1)*b ... a*b b) */
   r[0] = a*b; r[1] = b;
   return v;
 }
-#line 4469 "dwf.nw"
+#line 4542 "dwf.nw"
 static inline double
 vsum(vReal v)                                         /* return sum(i, [i]v) */
 {
   REAL *r = (REAL *)&v;
   return r[0] + r[1];
 }
-#line 4479 "dwf.nw"
+#line 4552 "dwf.nw"
 static inline vReal
 vput_0(vReal a, double b)                     /* return (b [1]a ... [Vs-1]a) */
 {
@@ -75,7 +76,7 @@ vput_0(vReal a, double b)                     /* return (b [1]a ... [Vs-1]a) */
    v[0] = b;
    return a;
 }
-#line 4490 "dwf.nw"
+#line 4563 "dwf.nw"
 static inline vReal
 vput_n(vReal a, double b)                     /* return ([0]a ... [Vs-2]a b) */
 {
@@ -83,7 +84,7 @@ vput_n(vReal a, double b)                     /* return ([0]a ... [Vs-2]a b) */
    v[1] = b;
    return a;
 }
-#line 4502 "dwf.nw"
+#line 4575 "dwf.nw"
 static inline vReal
 shift_up1(vReal a, vReal b)                /* return ([1]a ... [Vs-1]a [0]b) */
 {
@@ -96,7 +97,7 @@ shift_up1(vReal a, vReal b)                /* return ([1]a ... [Vs-1]a [0]b) */
 
    return r;
 }
-#line 4517 "dwf.nw"
+#line 4590 "dwf.nw"
 static inline vReal
 shift_upN(vReal a, vReal b)             /* return ([Vs-1]a [0]b ... [Vs-2]b) */
 {
@@ -109,14 +110,14 @@ shift_upN(vReal a, vReal b)             /* return ([Vs-1]a [0]b ... [Vs-2]b) */
 
    return r;
 }
-#line 4386 "dwf.nw"
+#line 4458 "dwf.nw"
 #include "dwf-ssed.h"
 #define MACHINE "sse double"
 #define L3(n) MIT_ssed_##n
 #define PAD16(size) (15+(size))
 #define ALIGN16(addr) ((void *)(~15 & (15 + (size_t)(addr))))
-#line 3057 "dwf.nw"
+#line 3028 "dwf.nw"
 #define BLOCKOF_YA(j,t,c,ri) BLOCKOF2_YA(j,t,c,ri)
 #define BLOCKOF_YB(j,t,c,ri) BLOCKOF2_YB(j,t,c,ri)
-#line 4392 "dwf.nw"
+#line 4464 "dwf.nw"
 #include "dwf.c"

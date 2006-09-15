@@ -1,4 +1,4 @@
-#line 1550 "dwf.nw"
+#line 1555 "dwf.nw"
 struct neighbor {
     int              size;            /* size of site table */
     int              inside_size;     /* number of inside sites */
@@ -21,17 +21,17 @@ struct neighbor {
     int              qmp_smask;       /* send flags for qmp_sh[] */
     QMP_msghandle_t  qmp_handle;      /* common send & receive handle */
 };
-#line 1576 "dwf.nw"
+#line 1581 "dwf.nw"
 struct boundary {
     int   index;   /* x-index of this boundary site */
     int   mask;    /* bitmask of the borders */
 };
-#line 1585 "dwf.nw"
+#line 1590 "dwf.nw"
 struct site {
   int Uup;           /* up-links are Uup, Uup+1, Uup+2, Uup+3 */
   int Udown[DIM];    /* four down-links */
   int F[2*DIM];      /* eight neighboring fermions on the other sublattice */
 };
-#line 4192 "dwf.nw"
+#line 4180 "dwf.nw"
 extern struct neighbor even_odd;
 extern struct neighbor odd_even;

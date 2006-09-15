@@ -1,0 +1,24 @@
+#!/bin/sh
+
+if [ $# -ne 2 ]; then
+   echo "usage: $0 exe type"
+   exit 1
+fi
+
+exe="$1"
+type="$2"
+
+for s in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+  for c in 0 1 2; do
+    for d in 0 1 2 3; do
+      for re in 0 1; do
+        $exe `pwd`/dwf-op1-$type \
+                10 10 10 20 16 \
+                13 0.0625 \
+                0 0 0 0 $s $c $d $re
+      done
+    done
+  done
+done
+
+

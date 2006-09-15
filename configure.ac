@@ -1,4 +1,4 @@
-AC_INIT(cg-dwf, 1.3.1, [avp@lns.mit.edu])
+AC_INIT(cg-dwf, 1.3.2, [avp@lns.mit.edu])
 AC_CONFIG_AUX_DIR(autoconfdir)
 
 AC_CANONICAL_HOST

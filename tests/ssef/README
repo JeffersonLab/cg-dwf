@@ -1,0 +1,5 @@
+This directory contains SSE F specific tests.
+
+bl.c    -- checking if shifts are right.
+main.c  -- the driver.
+

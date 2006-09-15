@@ -176,7 +176,7 @@ operator(QDP_ColorMatrix *xU[],
 
     M_0 = -2 * (5.0 - M5);
     
-    L3(DWF_Dirac_Operator)(Ax, g, M_0, m_f, x);
+    L3(DWF_Dirac_Operator_conjugate)(Ax, g, M_0, m_f, x);
 
     L3(DWF_save_fermion)(NULL, NULL, fermion_writer, Ax);
 
@@ -190,6 +190,7 @@ operator(QDP_ColorMatrix *xU[],
 int
 main(int argc, char *argv[])
 {
+    QLA_Complex cone = { 1, 0 };
     QDP_Int           *iseed;
     QDP_RandomState   *rs;
     int                i;
@@ -219,7 +220,7 @@ main(int argc, char *argv[])
     src_d = atoi(argv[14]);
     src_ri = atoi(argv[15]);
 
-    print("DWF Dirac Operator, random U\n");
+    print("DWF Dirac Operator conjugate, random U\n");
 
     print("lattice %d %d %d %d %d\n",
 	  lattice_size[0],
@@ -266,7 +267,7 @@ main(int argc, char *argv[])
 
     for (i = 0; i < 4; i++) {
 	U[i] = QDP_create_M();
-	QDP_M_eq_gaussian_S(U[i], rs, QDP_all);
+        QDP_M_eq_c( U[i], &cone, QDP_all );
     }
 
     operator(U, M5, m_f);

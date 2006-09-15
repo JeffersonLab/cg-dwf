@@ -176,7 +176,7 @@ operator(QDP_ColorMatrix *xU[],
 
     M_0 = -2 * (5.0 - M5);
     
-    L3(DWF_Dirac_Operator)(Ax, g, M_0, m_f, x);
+    L3(DWF_Dirac_Operator_conjugate)(Ax, g, M_0, m_f, x);
 
     L3(DWF_save_fermion)(NULL, NULL, fermion_writer, Ax);
 
@@ -219,7 +219,7 @@ main(int argc, char *argv[])
     src_d = atoi(argv[14]);
     src_ri = atoi(argv[15]);
 
-    print("DWF Dirac Operator, random U\n");
+    print("DWF Dirac Operator conjugate, random U\n");
 
     print("lattice %d %d %d %d %d\n",
 	  lattice_size[0],

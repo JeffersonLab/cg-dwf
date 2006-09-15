@@ -15,7 +15,7 @@
 \title{Conjugate Gradient for Domain Wall Fermions
 with 4-d EO preconditioning}
 \author{Andrew Pochinsky}
-\date{May 22, 2006}
+\date{September 14, 2006}
 
 \begin{document}
 \maketitle
@@ -28,7 +28,7 @@ This version is suboptimal in overlapping communication and computation because
 of defficiencies of the QMP implementation.
 
 <<Version>>=
-static const char *version = "Version 1.3.0";
+static const char *version = "Version 1.3.2";
 @
 \end{abstract}
 
@@ -68,7 +68,7 @@ responsibility of QMP to provide a proper abstraction to the application.
 \item[Site] is a point on the lattice.
 \end{description}
 \subsection{Optimization Strategy}
-For this code we assume that scarsity of resources makes us run the
+For this code we assume that scarcity of resources makes us run the
 inverter on a small number of nodes compared to the number of
 sites. This is based on the observation that physics needs grow faster
 than SciDAC budget and computer deployment plans. We also assume, that
@@ -755,7 +755,7 @@ L3(DWF_save_fermion)(void *OuterFermion,
 }
 @
 \subsubsection{DWF Fermion Deallocator}
-We only free pointers that we allocated. The magic is in [[free16()]]---it
+We free only pointers that we allocated. The magic is in [[free16()]]---it
 knows about all heap objects allocated by [[alloc16()]].
 <<Interface functions>>=
 void
@@ -920,7 +920,7 @@ collect_add(vFermion *r,
   int i;
   vReal a = vmk_1(A);
 
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < n; i++, r++, x++, y++) {
      r->f[0][0].re = x->f[0][0].re + a * y->f[0][0].re;
      r->f[0][0].im = x->f[0][0].im + a * y->f[0][0].im;
      r->f[0][1].re = x->f[0][1].re + a * y->f[0][1].re;
@@ -953,6 +953,7 @@ collect_add(vFermion *r,
 @
 
 \begin{displaymath}
+ r \leftarrow \langle \psi | \phi \rangle
 \end{displaymath}
 <<Interface functions>>=
 void
@@ -964,12 +965,16 @@ L3(DWF_Fermion_Dot_Product)(double                  *r_re,
     *r_re = *r_im = 0;
     collect_dot(r_re, r_im, &psi->odd->f,  &phi->odd->f,  odd_even.size * Sv);
     collect_dot(r_re, r_im, &psi->even->f, &phi->even->f, even_odd.size * Sv);
+    DEBUG_QMP("before sum re: %g\n", *r_re)
     QMP_sum_double(r_re);
+    DEBUG_QMP("after sum re: %g\n", *r_re)
+    DEBUG_QMP("before sum im: %g\n", *r_im)
     QMP_sum_double(r_im);
+    DEBUG_QMP("after sum im: %g\n", *r_im)
 }
 @
 
-Running the dot product on one parity of fermions:
+Running the dot product on one parity of fermions.
 <<Static function prototypes>>=
 static inline void
 collect_dot(double *r_re,
@@ -984,32 +989,32 @@ collect_dot(double *r_re,
 
   for (i = 0; i < n; i++, a++, b++) {
     c0_re = a->f[0][0].re*b->f[0][0].re; c0_re += a->f[0][0].im*b->f[0][0].im;
-    c0_im = a->f[0][0].im*b->f[0][0].re; c0_im += a->f[0][0].re*b->f[0][0].im;
+    c0_im = a->f[0][0].re*b->f[0][0].im; c0_im -= a->f[0][0].im*b->f[0][0].re;
     c1_re = a->f[0][1].re*b->f[0][1].re; c1_re += a->f[0][1].im*b->f[0][1].im;
-    c1_im = a->f[0][1].im*b->f[0][1].re; c1_im += a->f[0][1].re*b->f[0][1].im;
+    c1_im = a->f[0][1].re*b->f[0][1].im; c1_im -= a->f[0][1].im*b->f[0][1].re;
     c2_re = a->f[0][2].re*b->f[0][2].re; c2_re += a->f[0][2].im*b->f[0][2].im;
-    c2_im = a->f[0][2].im*b->f[0][2].re; c2_im += a->f[0][2].re*b->f[0][2].im;
+    c2_im = a->f[0][2].re*b->f[0][2].im; c2_im -= a->f[0][2].im*b->f[0][2].re;
 
     c0_re += a->f[1][0].re*b->f[1][0].re; c0_re += a->f[1][0].im*b->f[1][0].im;
-    c0_im += a->f[1][0].im*b->f[1][0].re; c0_im += a->f[1][0].re*b->f[1][0].im;
+    c0_im += a->f[1][0].re*b->f[1][0].im; c0_im -= a->f[1][0].im*b->f[1][0].re;
     c1_re += a->f[1][1].re*b->f[1][1].re; c1_re += a->f[1][1].im*b->f[1][1].im;
-    c1_im += a->f[1][1].im*b->f[1][1].re; c1_im += a->f[1][1].re*b->f[1][1].im;
+    c1_im += a->f[1][1].re*b->f[1][1].im; c1_im -= a->f[1][1].im*b->f[1][1].re;
     c2_re += a->f[1][2].re*b->f[1][2].re; c2_re += a->f[1][2].im*b->f[1][2].im;
-    c2_im += a->f[1][2].im*b->f[1][2].re; c2_im += a->f[1][2].re*b->f[1][2].im;
+    c2_im += a->f[1][2].re*b->f[1][2].im; c2_im -= a->f[1][2].im*b->f[1][2].re;
 
     c0_re += a->f[2][0].re*b->f[2][0].re; c0_re += a->f[2][0].im*b->f[2][0].im;
-    c0_im += a->f[2][0].im*b->f[2][0].re; c0_im += a->f[2][0].re*b->f[2][0].im;
+    c0_im += a->f[2][0].re*b->f[2][0].im; c0_im -= a->f[2][0].im*b->f[2][0].re;
     c1_re += a->f[2][1].re*b->f[2][1].re; c1_re += a->f[2][1].im*b->f[2][1].im;
-    c1_im += a->f[2][1].im*b->f[2][1].re; c1_im += a->f[2][1].re*b->f[2][1].im;
+    c1_im += a->f[2][1].re*b->f[2][1].im; c1_im -= a->f[2][1].im*b->f[2][1].re;
     c2_re += a->f[2][2].re*b->f[2][2].re; c2_re += a->f[2][2].im*b->f[2][2].im;
-    c2_im += a->f[2][2].im*b->f[2][2].re; c2_im += a->f[2][2].re*b->f[2][2].im;
+    c2_im += a->f[2][2].re*b->f[2][2].im; c2_im -= a->f[2][2].im*b->f[2][2].re;
 
     c0_re += a->f[3][0].re*b->f[3][0].re; c0_re += a->f[3][0].im*b->f[3][0].im;
-    c0_im += a->f[3][0].im*b->f[3][0].re; c0_im += a->f[3][0].re*b->f[3][0].im;
+    c0_im += a->f[3][0].re*b->f[3][0].im; c0_im -= a->f[3][0].im*b->f[3][0].re;
     c1_re += a->f[3][1].re*b->f[3][1].re; c1_re += a->f[3][1].im*b->f[3][1].im;
-    c1_im += a->f[3][1].im*b->f[3][1].re; c1_im += a->f[3][1].re*b->f[3][1].im;
+    c1_im += a->f[3][1].re*b->f[3][1].im; c1_im -= a->f[3][1].im*b->f[3][1].re;
     c2_re += a->f[3][2].re*b->f[3][2].re; c2_re += a->f[3][2].im*b->f[3][2].im;
-    c2_im += a->f[3][2].im*b->f[3][2].re; c2_im += a->f[3][2].re*b->f[3][2].im;
+    c2_im += a->f[3][2].re*b->f[3][2].im; c2_im -= a->f[3][2].im*b->f[3][2].re;
 
     *r_re += vsum(c0_re + c1_re + c2_re);
     *r_im += vsum(c0_im + c1_im + c2_im);
@@ -1510,7 +1515,7 @@ for (neighbor->size = 1, neighbor->inside_size = 1, i = 0; i < DIM; i++) {
 }
 neighbor->boundary_size = neighbor->size - neighbor->inside_size;
 neighbor->site = tmalloc(neighbor->size * sizeof (struct site));
-#ifdef DEBUG_QMP
+#ifndef NO_DEBUG_QMP
 memset(neighbor->site, -1, neighbor->size * sizeof (struct site));
 #endif
 @
@@ -1533,7 +1538,7 @@ for (i = 0; i < 2 * DIM; i++) {
     if (network[d] > 1) {
         neighbor->snd_size[i] = neighbor->size / (bounds->hi[d] - bounds->lo[d]);
         neighbor->snd[i] = tmalloc(neighbor->snd_size[i] * sizeof (int));
-#ifdef DEBUG_QMP
+#ifndef NO_DEBUG_QMP
 	memset(neighbor->snd[i], -1, neighbor->snd_size[i] * sizeof (int));
 #endif
     } else {
@@ -1609,7 +1614,7 @@ static void build_neighbor(struct neighbor *out,
 	                   int              parity,
 	                   struct neighbor *in);
 @
-First part is easy: we start with copying [[in]] to [[out]], resetting fields
+First part is easy: we start with copying [[in]] to [[out]], and reset fields
 which will be computed shortly.
 <<Initialize [[out]]>>=
 *out = *in;
@@ -1741,7 +1746,7 @@ construct_rec(struct neighbor *out,
                    x[0], x[1], x[2], x[3], s, par, p, k)
          <<Insert [[k]] into [[site[p].F[dx] ]]>>
      <<Advance the hypersurface point>>
-     out->rcv_size[dz^1] = k;
+     out->rcv_size[dz] = k;
 }
 @
 Constucting the neighbor's network position is straightforward:
@@ -2248,7 +2253,7 @@ cg(vOddFermion *x_o,
         compute_sum2_oN(r_o, &gamma, -alpha, q_o);
         compute_sum2_o(x_o, alpha, p_o);
         <<Finalize $\langle r,r\rangle$ computation>>
-        DEBUG_DWF("cg loop: k=%d, rho=%g, norm_z=%g, alpha=%g, gamma=%g\n",
+        DEBUG_CG("cg loop: k %d , rho %g , norm_z %g , alpha %g , gamma %g\n",
                    k, rho, norm_z, alpha, gamma)
         if (gamma <= epsilon) {
             rho = gamma;
@@ -2298,8 +2303,7 @@ if (auxB_e) free16(auxB_e); auxB_e = 0;
 @
 
 \subsubsection{[[copy_o(d, s)]] or $d\leftarrow s$}
-This is a copies $d\leftarrow s$. Since it is used outside of the cg loop,
-we do not worry too much about efficiency here. Hence, cache pollution.
+This is a copy, $d\leftarrow s$:
 <<Static function prototypes>>=
 static void copy_o(vOddFermion *dst, const vOddFermion *src);
 @
@@ -2307,12 +2311,9 @@ static void copy_o(vOddFermion *dst, const vOddFermion *src);
 static void
 copy_o(vOddFermion *dst, const vOddFermion *src)
 {
-  int i = odd_even.size * Sv * sizeof (vOddFermion) / sizeof (vReal);
-  vReal *d = (vReal *)dst;
-  const vReal *s = (const vReal *)src;
+  int size = odd_even.size * Sv * sizeof (vOddFermion);
 
-  for ( ;i--;)
-      *d++ = *s++;
+  memcpy(dst, src, size);
 }
 @
 \subsubsection{[[compute_sum2_o(d,alpha,s)]], or $d\leftarrow d + \alpha s$}
@@ -2326,15 +2327,25 @@ static void compute_sum2_o(vOddFermion *dst, double alpha, const vOddFermion *sr
 static void
 compute_sum2_o(vOddFermion *dst, double alpha, const vOddFermion *src)
 {
-  int i = odd_even.size * Sv * sizeof (vOddFermion) / sizeof (vReal);
   vReal a = vmk_1(alpha);
-  vReal *d = (vReal *)dst;
-  const vReal *s = (const vReal *)src;
+  int n = odd_even.size * Sv;
+  int i;
 
-  for ( ;i--;)
-      *d++ += a * *s++;
+#define OP(d,c,ri) dst->f.f[d][c].ri += a * src->f.f[d][c].ri;
+  for(i = 0; i < n; i++, dst++, src++) {
+     LOOP_DIRAC(LOOP_COLOR, LOOP_REIM, OP)
+  }
+#undef OP
 }
 @
+Handy definitions for unrolling the loops:
+<<Definitions>>=
+#define LOOP_REIM(m,a ...)   m(a,re) m(a,im)
+#define LOOP_COLOR(m,a ...)  m(a,0) m(a,1) m(a,2)
+#define LOOP_DIRAC(m,a ...)  m(a,0) LOOP1_DIRAC(m,a)
+#define LOOP1_DIRAC(m,a ...) m(a,1) m(a,2) m(a,3)
+@
+
 \subsubsection{[[compute_sum2x_o(d,s,alpha)]], or $d\leftarrow \alpha d + s$}
 Almost the same as the previous one, but scaling is applied to another summand.
 <<Static function prototypes>>=
@@ -2344,13 +2355,15 @@ static void compute_sum2x_o(vOddFermion *dst, const vOddFermion *src, double alp
 static void
 compute_sum2x_o(vOddFermion *dst, const vOddFermion *src, double alpha)
 {
-  int i = odd_even.size * Sv * sizeof (vOddFermion) / sizeof (vReal);
   vReal a = vmk_1(alpha);
-  vReal *d = (vReal *)dst;
-  const vReal *s = (const vReal *)src;
+  int n = odd_even.size * Sv;
+  int i;
 
-  for ( ;i--; d++)
-      *d = a * *d + *s++;
+#define OP(d,c,ri) dst->f.f[d][c].ri = a * dst->f.f[d][c].ri + src->f.f[d][c].ri;
+  for (i = 0; i < n; i++, dst++, src++) {
+      LOOP_DIRAC(LOOP_COLOR, LOOP_REIM, OP)
+  }
+#undef OP
 }
 @
 \subsubsection{[[compute_sum_x(d,x,alpha,y)]] or $q\leftarrow x + \alpha y$}
@@ -2367,14 +2380,15 @@ static void
 compute_sum_e(vEvenFermion *d,
               const vEvenFermion *x, double alpha, const vEvenFermion *y)
 {
-  const vReal *X = (const vReal *)x;
-  const vReal *Y = (const vReal *)y;
-  vReal *D = (vReal *)d;
+  int n = even_odd.size * Sv;
   vReal a = vmk_1(alpha);
-  int i = even_odd.size * Sv * sizeof (vEvenFermion) / sizeof (vReal);
+  int i;
 
-  for (;i--;)
-     *D++ = *X++ + a * *Y++;
+#define OP(s,c,ri) d->f.f[s][c].ri = x->f.f[s][c].ri + a * y->f.f[s][c].ri;
+  for (i = 0; i < n; i++, d++, x++, y++) {
+     LOOP_DIRAC(LOOP_COLOR, LOOP_REIM, OP)
+  }
+#undef OP
 }
 @
 <<Static functions>>=
@@ -2382,14 +2396,15 @@ static void
 compute_sum_o(vOddFermion *d,
               const vOddFermion *x, double alpha, const vOddFermion *y)
 {
-  const vReal *X = (const vReal *)x;
-  const vReal *Y = (const vReal *)y;
-  vReal *D = (vReal *)d;
+  int n = odd_even.size * Sv;
   vReal a = vmk_1(alpha);
-  int i = odd_even.size * Sv * sizeof (vOddFermion) / sizeof (vReal);
+  int i;
 
-  for (;i--;)
-     *D++ = *X++ + a * *Y++;
+#define OP(s,c,ri) d->f.f[s][c].ri = x->f.f[s][c].ri + a * y->f.f[s][c].ri;
+  for (i = 0; i < n; i++, d++, x++, y++) {
+     LOOP_DIRAC(LOOP_COLOR, LOOP_REIM, OP)
+  }
+#undef OP
 }
 @
 
@@ -2411,41 +2426,19 @@ compute_sum_oN(vOddFermion *d, double *norm,
   const vFermion *Y = &y->f;
   int n = odd_even.size * Sv;
   vReal a = vmk_1(alpha);
-  vReal q0r, q1r, q2r, q0i, q1i, q2i;
-  vReal s0r, s1r, s2r, s0i, s1i, s2i;
+#define DF(c,r) vReal q##c##r, s##c##r;
+  LOOP_COLOR(LOOP_REIM, DF)
+#undef DF
   int i;
 
   *norm = 0;
   for (i = 0; i < n; i++, X++, Y++, D++) {
-    q0r = D->f[0][0].re = X->f[0][0].re + a * Y->f[0][0].re; s0r = q0r * q0r;
-    q0i = D->f[0][0].im = X->f[0][0].im + a * Y->f[0][0].im; s0i = q0i * q0i;
-    q1r = D->f[0][1].re = X->f[0][1].re + a * Y->f[0][1].re; s1r = q1r * q1r;
-    q1i = D->f[0][1].im = X->f[0][1].im + a * Y->f[0][1].im; s1i = q1i * q1i;
-    q2r = D->f[0][2].re = X->f[0][2].re + a * Y->f[0][2].re; s2r = q2r * q2r;
-    q2i = D->f[0][2].im = X->f[0][2].im + a * Y->f[0][2].im; s2i = q2i * q2i;
-
-    q0r = D->f[1][0].re = X->f[1][0].re + a * Y->f[1][0].re; s0r += q0r * q0r;
-    q0i = D->f[1][0].im = X->f[1][0].im + a * Y->f[1][0].im; s0i += q0i * q0i;
-    q1r = D->f[1][1].re = X->f[1][1].re + a * Y->f[1][1].re; s1r += q1r * q1r;
-    q1i = D->f[1][1].im = X->f[1][1].im + a * Y->f[1][1].im; s1i += q1i * q1i;
-    q2r = D->f[1][2].re = X->f[1][2].re + a * Y->f[1][2].re; s2r += q2r * q2r;
-    q2i = D->f[1][2].im = X->f[1][2].im + a * Y->f[1][2].im; s2i += q2i * q2i;
-
-    q0r = D->f[2][0].re = X->f[2][0].re + a * Y->f[2][0].re; s0r += q0r * q0r;
-    q0i = D->f[2][0].im = X->f[2][0].im + a * Y->f[2][0].im; s0i += q0i * q0i;
-    q1r = D->f[2][1].re = X->f[2][1].re + a * Y->f[2][1].re; s1r += q1r * q1r;
-    q1i = D->f[2][1].im = X->f[2][1].im + a * Y->f[2][1].im; s1i += q1i * q1i;
-    q2r = D->f[2][2].re = X->f[2][2].re + a * Y->f[2][2].re; s2r += q2r * q2r;
-    q2i = D->f[2][2].im = X->f[2][2].im + a * Y->f[2][2].im; s2i += q2i * q2i;
-
-    q0r = D->f[3][0].re = X->f[3][0].re + a * Y->f[3][0].re; s0r += q0r * q0r;
-    q0i = D->f[3][0].im = X->f[3][0].im + a * Y->f[3][0].im; s0i += q0i * q0i;
-    q1r = D->f[3][1].re = X->f[3][1].re + a * Y->f[3][1].re; s1r += q1r * q1r;
-    q1i = D->f[3][1].im = X->f[3][1].im + a * Y->f[3][1].im; s1i += q1i * q1i;
-    q2r = D->f[3][2].re = X->f[3][2].re + a * Y->f[3][2].re; s2r += q2r * q2r;
-    q2i = D->f[3][2].im = X->f[3][2].im + a * Y->f[3][2].im; s2i += q2i * q2i;
-
-    *norm += vsum(s0r + s0i + s1r + s1i + s2r + s2i);
+#define OP(eq,d,c,r) \
+  q##c##r=D->f[d][c].r=X->f[d][c].r+a*Y->f[d][c].r; s##c##r eq q##c##r*q##c##r;
+   LOOP_COLOR(LOOP_REIM, OP, =, 0)
+   LOOP1_DIRAC(LOOP_COLOR, LOOP_REIM, OP, +=)
+#undef OP
+    *norm += vsum(s0re + s0im + s1re + s1im + s2re + s2im);
     }
   <<Start $\langle r,r\rangle$ computation>>
 }
@@ -2464,41 +2457,19 @@ compute_sum2_oN(vOddFermion *d, double *norm,
   const vFermion *Y = &y->f;
   int n = odd_even.size * Sv;
   vReal a = vmk_1(alpha);
-  vReal q0r, q1r, q2r, q0i, q1i, q2i;
-  vReal s0r, s1r, s2r, s0i, s1i, s2i;
+#define DF(c,r) vReal q##c##r, s##c##r;
+  LOOP_COLOR(LOOP_REIM, DF)
+#undef DF
   int i;
 
   *norm = 0;
   for (i = 0; i < n; i++, Y++, D++) {
-    q0r = D->f[0][0].re += a * Y->f[0][0].re; s0r = q0r * q0r;
-    q0i = D->f[0][0].im += a * Y->f[0][0].im; s0i = q0i * q0i;
-    q1r = D->f[0][1].re += a * Y->f[0][1].re; s1r = q1r * q1r;
-    q1i = D->f[0][1].im += a * Y->f[0][1].im; s1i = q1i * q1i;
-    q2r = D->f[0][2].re += a * Y->f[0][2].re; s2r = q2r * q2r;
-    q2i = D->f[0][2].im += a * Y->f[0][2].im; s2i = q2i * q2i;
-
-    q0r = D->f[1][0].re += a * Y->f[1][0].re; s0r += q0r * q0r;
-    q0i = D->f[1][0].im += a * Y->f[1][0].im; s0i += q0i * q0i;
-    q1r = D->f[1][1].re += a * Y->f[1][1].re; s1r += q1r * q1r;
-    q1i = D->f[1][1].im += a * Y->f[1][1].im; s1i += q1i * q1i;
-    q2r = D->f[1][2].re += a * Y->f[1][2].re; s2r += q2r * q2r;
-    q2i = D->f[1][2].im += a * Y->f[1][2].im; s2i += q2i * q2i;
-
-    q0r = D->f[2][0].re += a * Y->f[2][0].re; s0r += q0r * q0r;
-    q0i = D->f[2][0].im += a * Y->f[2][0].im; s0i += q0i * q0i;
-    q1r = D->f[2][1].re += a * Y->f[2][1].re; s1r += q1r * q1r;
-    q1i = D->f[2][1].im += a * Y->f[2][1].im; s1i += q1i * q1i;
-    q2r = D->f[2][2].re += a * Y->f[2][2].re; s2r += q2r * q2r;
-    q2i = D->f[2][2].im += a * Y->f[2][2].im; s2i += q2i * q2i;
-
-    q0r = D->f[3][0].re += a * Y->f[3][0].re; s0r += q0r * q0r;
-    q0i = D->f[3][0].im += a * Y->f[3][0].im; s0i += q0i * q0i;
-    q1r = D->f[3][1].re += a * Y->f[3][1].re; s1r += q1r * q1r;
-    q1i = D->f[3][1].im += a * Y->f[3][1].im; s1i += q1i * q1i;
-    q2r = D->f[3][2].re += a * Y->f[3][2].re; s2r += q2r * q2r;
-    q2i = D->f[3][2].im += a * Y->f[3][2].im; s2i += q2i * q2i;
-
-    *norm += vsum(s0r + s0i + s1r + s1i + s2r + s2i);
+#define OP(eq,d,c,r) \
+  q##c##r=D->f[d][c].r+=a*Y->f[d][c].r; s##c##r eq q##c##r*q##c##r;
+   LOOP_COLOR(LOOP_REIM, OP, =, 0)
+   LOOP1_DIRAC(LOOP_COLOR, LOOP_REIM, OP, +=)
+#undef OP
+    *norm += vsum(s0re + s0im + s1re + s1im + s2re + s2im);
     }
   <<Start $\langle r,r\rangle$ computation>>
 }
@@ -3542,20 +3513,18 @@ for (d = 0; d < 2*DIM; d++) {
 }
 @
 <<Multiply [[*u]] by [[*g]] and store the result in [[*h]]>>=
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
-}
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+@
+Run through the half fermion indices:
+<<Definitions>>=
+#define LOOP_HALF(m,a ...) m(a,0) m(a,1)
 @
 \subsubsection{Parts of $\eta-S_{xy}\psi$}
 
@@ -4071,14 +4040,18 @@ Because there is no confirming QMP implementation, we have to deal with
 esoteric restrictions that are imposed rhyme or reason and are not documented
 either. Otherwise, they would be not esoteric, ain't they?
 
-Rrestriction one says that deadlocks happen if there no than one active handle
+Restriction one says that deadlocks happen if there more8 than one active handle
 at a time. We had already packed all communication into a single superhandle,
 now it is a time to use it. To be extra paranoic, we check if there is a handle
 before using it.
 <<Start sends and receives>>=
 if (nb->qmp_smask) {
-    QMP_start(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
+    cleanup_receivers(nb);
+    dump_buffers("start", nb);
     DEBUG_QMP("start sends and receives (0x%x)\n", (int)nb->qmp_handle)
+#endif
+    QMP_start(nb->qmp_handle);
 }
 @
 
@@ -4087,8 +4060,12 @@ is a waste, but we have to work with software that we have.
 <<Finish sends and receives>>=
 if (nb->qmp_smask) {
     QMP_wait(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
     DEBUG_QMP("waiting for sends and receives (0x%x)\n",
                (int)nb->qmp_handle)
+    dump_buffers("wait", nb);
+    cleanup_senders(nb);
+#endif
 }
 @
 
@@ -4109,8 +4086,9 @@ sum. Start the global operation which will distribute the pieces,
 compute the sum, and provide the result to each node.
 
 <<Start $\langle r,r\rangle$ computation>>=
+DEBUG_QMP("sum_double(%p): before <r|r>: %g\n", norm, *norm)
 QMP_sum_double(norm);
-DEBUG_QMP("sum_double(%p)\n", norm)
+DEBUG_QMP("after <r|r>: %g\n", *norm)
 @
 
 \subsection{Generally Useful Functions}
@@ -4162,6 +4140,16 @@ vhfzero(vHalfFermion *v)
 \subsection{Debug Aids}
 Here are macros for debugging QMP.
 <<Definitions>>=
+#ifdef DEBUG_CG
+#define DEBUG_CG(msg,a ...) do \
+     printf("[%05d] %s:%d:QMP/%s(): " msg, QMP_get_node_number(), \
+                             __FILE__,__LINE__,__FUNCTION__,##a); \
+  while(0);
+#else /* !defined(DEBUG_CG) */
+#define DEBUG_CG(msg,a ...)
+#define NO_DEBUG_CG
+#endif /* defined(DEBUG_CG) */
+           
 #ifdef DEBUG_QMP
 #undef DEBUG_QMP
 #define DEBUG_QMP(msg,a ...) do \
@@ -4191,6 +4179,86 @@ Another debug aid for other pieces of the code:
 <<Neighbor tables>>
 extern struct neighbor even_odd;
 extern struct neighbor odd_even;
+@
+\subsubsection{Communication debugging}
+Let us start with prototypes.
+<<Static function prototypes>>=
+#ifndef NO_DEBUG_QMP
+static void cleanup_receivers(struct neighbor *nb);
+static void cleanup_senders(struct neighbor *nb);
+static void dump_buffers(const char *name, struct neighbor *nb);
+#endif
+@
+And their implementations. The cleanups fills buffers with [[0x1q]] for sends
+and [[0x2q]] for receives, where [[q]] is the direction.
+<<Static functions>>=
+#ifndef NO_DEBUG_QMP
+static void
+cleanup_receivers(struct neighbor *nb)
+{
+    int i;
+
+    for (i = 0; i < 2 * DIM; i++) {
+         if (nb->rcv_size[i])
+	     memset(nb->rcv_buf[i],
+                    0x20 + i,
+                    nb->rcv_size[i] * Sv * sizeof (vHalfFermion));
+    }
+}
+
+static void
+cleanup_senders(struct neighbor *nb)
+{
+    int i;
+
+    for (i = 0; i < 2 * DIM; i++) {
+         if (nb->snd_size[i])
+	     memset(nb->snd_buf[i],
+                    0x10 + i,
+                    nb->snd_size[i] * Sv * sizeof (vHalfFermion));
+    }
+}
+
+static void
+dump_buffer(const char *name,
+            const char *type,
+            int         num,
+            void       *ptr,
+            int         size)
+{
+   unsigned char *p = ptr;
+   int count = size * Sv * sizeof (vHalfFermion);
+   int i;
+   char buffer[200];
+   int node = QMP_get_node_number();
+
+   if (count == 0) {
+      printf("[%05d] %s %s[%d]: empty\n", node, name, type, num);
+      return;
+   }
+   for (i = 0; i < count;) {
+       int j = i;
+       int k = 0;
+       for (buffer[0] = 0, k = 0; (k < 16) && (i < count); k++, i++, p++) {
+           char v[10];
+           sprintf(v, " %02x", *p);
+	   strcat(buffer, v);
+       }
+       printf("[%05d] %s %s[%d]: %08x %s\n", node, name, type, num, j, buffer);
+   }
+}
+
+static void
+dump_buffers(const char *name, struct neighbor *nb)
+{
+   int i;
+
+   for (i = 0; i < 2 * DIM; i++)
+       dump_buffer(name, "s", i, nb->snd_buf[i], nb->snd_size[i]);
+   for (i = 0; i < 2 * DIM; i++)
+       dump_buffer(name, "r", i, nb->rcv_buf[i], nb->rcv_size[i]);
+}
+#endif
 @
 
 
@@ -4253,6 +4321,7 @@ needed to access SSE units.
 <<SSE single precision types>>=
 #define Vs 4
 typedef float REAL;
+/* typedef REAL vReal __attribute__((mode(V4SF),aligned(16))); */
 #include <xmmintrin.h>
 typedef __m128 vReal;
 <<Usual complex types>>
@@ -4357,12 +4426,13 @@ Shift to the left:
 static inline vReal
 shift_up1(vReal a, vReal b)                /* return ([1]a ... [Vs-1]a [0]b) */
 {
-   vReal x = a;
-   vReal y = b;
-   asm("shufps\t$0x30,%0,%1\n\t"
-       "shufps\t$0x29,%1,%0"
-       : "+x" (x), "+x" (y));
-   return x;
+   vReal z;
+   REAL *X = (REAL *)&a;
+   REAL *Y = (REAL *)&b;
+   REAL *Z = (REAL *)&z;
+
+   Z[0] = X[1]; Z[1] = X[2]; Z[2] = X[3]; Z[3] = Y[0];
+   return z;
 }
 @
 And to the right:
@@ -4370,11 +4440,13 @@ And to the right:
 static inline vReal
 shift_upN(vReal a, vReal b)             /* return ([Vs-1]a [0]b ... [Vs-2]b) */
 {
-   vReal x = a;
-   asm("shufps\t$0x03,%1,%0\n\t"
-       "shufps\t$0x9c,%1,%0"
-       : "+x" (x): "x" (b));
-   return x;
+   vReal z;
+   REAL *X = (REAL *)&a;
+   REAL *Y = (REAL *)&b;
+   REAL *Z = (REAL *)&z;
+
+   Z[0] = X[3]; Z[1] = Y[0]; Z[2] = Y[1]; Z[3] = Y[2];
+   return z;
 }
 @
 
@@ -4398,8 +4470,9 @@ needed to access SSE units.
 <<SSE double precision types>>=
 #define Vs 2
 typedef double REAL;
+/* typedef double __attribute__((mode(V2DF),aligned(16))) vReal; */
 #include <xmmintrin.h>
-typedef __m128d vReal; 
+typedef __m128d vReal;
 <<Usual complex types>>
 @
 
@@ -4681,7 +4754,7 @@ The BlueLight extension of the PPC architecture is for the BlueGene/L. It
 requires the [[-mbluelight]] flag for gcc.
 <<BlueLight single precision types>>=
 #include <bluelight.h>
-typedef REAL float;
+typedef float REAL;
 typedef vector float vReal;
 #define Vs 2
 <<Usual complex types>>

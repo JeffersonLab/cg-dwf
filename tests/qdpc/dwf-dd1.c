@@ -25,20 +25,6 @@
 #define _L3(a,b)   __L3(a,b)
 #define L3(n)      _L3(PREFIX,n)
 
-void
-xxx(void)
-{
-  fflush(stdout);
-}
-
-static double
-diff_time(const struct rusage *r0,
-	  const struct rusage *r1)
-{
-  return (r1->ru_utime.tv_sec - r0->ru_utime.tv_sec +
-	  1e-6 * (r1->ru_utime.tv_usec - r0->ru_utime.tv_usec));
-}
-
 static void
 error(const char *fmt, ...)
 {
@@ -122,48 +108,6 @@ gauge_reader(const void *ptr, void *env,
 }
 
 static double
-fermion_reader_rhs(const void *ptr, void *env, 
-		   const int latt_coord[5], int color, int spin, int reim)
-{
-    QLA_DiracFermion **psi    = (QLA_DiracFermion **)ptr;
-    QLA_Complex        c;
-    QLA_Real           v;
-    int                Ls1    = lattice_size[4] - 1;
-    int                s      = latt_coord[4];
-    int                node   = QDP_node_number((int *)latt_coord);
-    int                linear = QDP_index((int *)latt_coord);
-
-    if (node != QDP_this_node) {
-	error("Coordinates [%d %d %d %d %d] are on node %d, not on %d\n",
-	      latt_coord[0], latt_coord[1], latt_coord[2], latt_coord[3],
-	      latt_coord[4],
-	      node, QDP_this_node);
-    }
-    QLA_C_eq_elem_D(&c, &psi[Ls1-s][linear], color, spin);
-    if (reim == 0)
-	QLA_R_eq_re_C(&v, &c);
-    else
-	QLA_R_eq_im_C(&v, &c);
-
-    if (spin >= 2)
-	v = -v;
-#if 0
-    printf("fermion_rhs: lat[%d %d %d %d %d], c %d, s %d, ri %d, v %g\n",
-	   latt_coord[0],
-	   latt_coord[1],
-	   latt_coord[2],
-	   latt_coord[3],
-	   latt_coord[4],
-	   color,
-	   spin,
-	   reim,
-	   v);
-#endif
-
-    return v;
-}
-
-static double
 fermion_reader_guess(const void *ptr, void *env, 
 		     const int latt_coord[5], int color, int spin, int reim)
 {
@@ -208,36 +152,26 @@ fermion_reader_guess(const void *ptr, void *env,
 
 
 static void
-solve(QDP_DiracFermion **solution,
-      QDP_ColorMatrix *xU[],
-      double M5,
-      double m_f,
-      QDP_DiracFermion **rhs,
-      QDP_DiracFermion **x0,
-      double eps,
-      int iter)
+test(QDP_ColorMatrix *xU[],
+     double M5,
+     double m_f,
+     QDP_DiracFermion **a,
+     QDP_DiracFermion **b)
 {
-    int status;
     int i;
-    int out_iter;
-    double out_eps;
     double M_0;
     QDP_ColorMatrix *xV[4];
     QLA_ColorMatrix *U[4];
     QLA_ColorMatrix *V[4];
-    QLA_DiracFermion **xRHS;
-    QLA_DiracFermion **xX0;
+    QLA_DiracFermion **xa;
+    QLA_DiracFermion **xb;
     L3(DWF_Gauge)   *g;
-    L3(DWF_Fermion) *eta;
-    L3(DWF_Fermion) *X0;
-    L3(DWF_Fermion) *res;
-    L3(DWF_Fermion) *Mr;
-    L3(DWF_Fermion) *dlt;
-    struct rusage r0, r1;
-    double d_r, d_i;
-    double r_r, r_i;
-    double flops;
-    double v4, ls;
+    L3(DWF_Fermion) *A;
+    L3(DWF_Fermion) *B;
+    L3(DWF_Fermion) *DA;
+    L3(DWF_Fermion) *BD;
+    double bD_a_re, bD_a_im;
+    double b_Da_re, b_Da_im;
     
     for (i = 0; i < 4; i++) {
 	xV[i] = QDP_create_M();
@@ -251,14 +185,11 @@ solve(QDP_DiracFermion **solution,
 	V[i] = QDP_expose_M(xV[i]);
     }
 
-    xRHS = malloc(lattice_size[4] * sizeof (QLA_DiracFermion *));
-    xX0  = malloc(lattice_size[4] * sizeof (QLA_DiracFermion *));
+    xa = malloc(lattice_size[4] * sizeof (QLA_DiracFermion *));
+    xb  = malloc(lattice_size[4] * sizeof (QLA_DiracFermion *));
     for (i = 0; i < lattice_size[4]; i++) {
-	xRHS[i] = QDP_expose_D(rhs[i]);
-	if (x0 != rhs)
-	  xX0[i] = QDP_expose_D(x0[i]);
-	else
-	  xX0[i] = xRHS[i];
+	xa[i] = QDP_expose_D(a[i]);
+	xb[i] = QDP_expose_D(b[i]);
     }
 
 
@@ -267,61 +198,27 @@ solve(QDP_DiracFermion **solution,
     }
 
     g   = L3(DWF_load_gauge)(U, V, NULL, gauge_reader);
-    eta = L3(DWF_load_fermion)(xRHS, NULL, fermion_reader_rhs);
-    X0  = L3(DWF_load_fermion)(xX0, NULL, fermion_reader_guess);
-    res = L3(DWF_allocate_fermion)();
-    Mr  = L3(DWF_allocate_fermion)();
-    dlt = L3(DWF_allocate_fermion)();
+    A   = L3(DWF_load_fermion)(xa, NULL, fermion_reader_guess);
+    B   = L3(DWF_load_fermion)(xb, NULL, fermion_reader_guess);
+    DA  = L3(DWF_allocate_fermion)();
+    BD  = L3(DWF_allocate_fermion)();
 
     M_0 = -2*(5.0-M5) ;  
-    getrusage(RUSAGE_SELF, &r0);
-    status = L3(DWF_cg_solver)(res, &out_eps, &out_iter,
-			       g, M_0, m_f, X0, eta, eps, 1, iter);
-    getrusage(RUSAGE_SELF, &r1);
+    L3(DWF_Dirac_Operator)(DA, g, M_0, m_f, A);
+    L3(DWF_Dirac_Operator_conjugate)(BD, g, M_0, m_f, B);
+    L3(DWF_Fermion_Dot_Product)(&bD_a_re, &bD_a_im, BD, A);
+    L3(DWF_Fermion_Dot_Product)(&b_Da_re, &b_Da_im, B, DA);
 
-    ls = lattice_size[4];
-    v4 = lattice_size[0] * lattice_size[1] * lattice_size[2] * lattice_size[3];
-    flops = v4 * (out_iter * (ls * 3312. + 48.) + ls * 9708. + 144.);
-    
-    L3(DWF_Dirac_Operator)(Mr, g, M_0, m_f, res);
-    L3(DWF_Add_Fermion)(dlt, Mr, -1.0, eta);
-    L3(DWF_Fermion_Dot_Product)(&d_r, &d_i, dlt, dlt);
-    L3(DWF_Fermion_Dot_Product)(&r_r, &r_i, eta, eta);
-    
-    print("L3 DWF solver: status = %d, iterations=%d, epsilon=%g\n",
-	  status, out_iter, out_eps);
-    print("L3 DWF time: %g sec, %d iterations, %d Ls\n",
-	  diff_time(&r0, &r1), out_iter, lattice_size[4]);
-    print("L3 DWF true residue squared: %g\n", d_r);
-    print("L3 DWF rhs normalization: %g\n", r_r);
-    print("L3 DWF residue normalized: %g\n", d_r / r_r);
-    {
-	int d = QMP_get_logical_number_of_dimensions();
-	const int *s = QMP_get_logical_dimensions();
-
-	print("L3 DWF perf: %g Mflops, l %d %d %d %d %d  n %d %d %d %d\n",
-	      flops * 1e-6 / diff_time(&r0, &r1),
-	      lattice_size[0],
-	      lattice_size[1],
-	      lattice_size[2],
-	      lattice_size[3],
-	      lattice_size[4],
-	      d < 0? 1: s[0],
-	      d < 1? 1: s[1],
-	      d < 2? 1: s[2],
-	      d < 3? 1: s[3]);
-    }
-
-    /* Free all allocated L3 fields here */
+    print("D+ vs. D bD_a: %g %g\n", bD_a_re, bD_a_im);
+    print("D+ vs. D b_Da: %g %g\n", b_Da_re, b_Da_im);
 
     L3(DWF_fini)();
     
     QDP_resume_comm();
     
     for (i = 0; i < lattice_size[4]; i++) {
-        if (x0 != rhs)
-	    QDP_reset_D(x0[i]);
-	QDP_reset_D(rhs[i]);
+	QDP_reset_D(a[i]);
+	QDP_reset_D(b[i]);
     }
 
     for (i = 0; i < 4; i++) {
@@ -337,21 +234,19 @@ int
 main(int argc, char *argv[])
 {
     QLA_Complex cone = { 1, 0 };
+    int                i;
     QDP_Int           *iseed;
     QDP_RandomState   *rs;
-    int                i;
     QDP_ColorMatrix   *U[4];
-    QDP_DiracFermion **rhs;
-    QDP_DiracFermion **solution;
+    QDP_DiracFermion **a;
+    QDP_DiracFermion **b;
     double             M5;
     double             m_f;
-    double             epsilon;
-    int                iter;
 
     QDP_initialize(&argc, &argv);
     
-    if (argc != 10) {
-	print("usage: %s Lx Ly Lz Lt Ls M5 m_f epsilon iter\n", argv[0]);
+    if (argc != 8) {
+	print("usage: %s Lx Ly Lz Lt Ls M5 m_f\n", argv[0]);
 	QDP_finalize();
 	return 1;
     }
@@ -361,9 +256,8 @@ main(int argc, char *argv[])
 
     M5       = atof(argv[6]);
     m_f      = atof(argv[7]);
-    epsilon  = atof(argv[8]);
-    iter     = atoi(argv[9]);
 
+    print("Test of D and D^+ on random U\n");
 
     print("lattice %d %d %d %d %d\n",
 	  lattice_size[0],
@@ -372,11 +266,8 @@ main(int argc, char *argv[])
 	  lattice_size[3],
 	  lattice_size[4]);
 
-
     print("M5         = %g\n", M5);
     print("m_f        = %g\n", m_f);
-    print("epsilon    = %g\n", epsilon);
-    print("iterations = %d\n", iter);
     
     QDP_set_latsize(4, lattice_size);
     QDP_create_layout();
@@ -405,18 +296,18 @@ main(int argc, char *argv[])
         QDP_M_eq_c( U[i], &cone, QDP_all );
     }
 
-    rhs      = malloc(lattice_size[4] * sizeof (QDP_DiracFermion *));
-    solution = malloc(lattice_size[4] * sizeof (QDP_DiracFermion *));
+    a = malloc(lattice_size[4] * sizeof (QDP_DiracFermion *));
+    b = malloc(lattice_size[4] * sizeof (QDP_DiracFermion *));
 
     for (i = 0; i < lattice_size[4]; i++) {
-	solution[i] = QDP_create_D();
-	rhs[i]      = QDP_create_D();
-	QDP_D_eq_gaussian_S(rhs[i], rs, QDP_all);
+	a[i] = QDP_create_D();
+	QDP_D_eq_gaussian_S(a[i], rs, QDP_all);
+	b[i] = QDP_create_D();
+	QDP_D_eq_gaussian_S(b[i], rs, QDP_all);
     }
 
     /* Do what it takes */
-    solve(solution, U, M5, m_f, rhs, rhs, epsilon, iter);
-    
+    test(U, M5, m_f, a, b);
 
     QDP_finalize();
     return 0;

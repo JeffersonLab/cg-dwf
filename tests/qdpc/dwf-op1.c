@@ -190,6 +190,7 @@ operator(QDP_ColorMatrix *xU[],
 int
 main(int argc, char *argv[])
 {
+    QLA_Complex cone = { 1, 0 };
     QDP_Int           *iseed;
     QDP_RandomState   *rs;
     int                i;
@@ -266,7 +267,7 @@ main(int argc, char *argv[])
 
     for (i = 0; i < 4; i++) {
 	U[i] = QDP_create_M();
-	QDP_M_eq_gaussian_S(U[i], rs, QDP_all);
+        QDP_M_eq_c( U[i], &cone, QDP_all );
     }
 
     operator(U, M5, m_f);

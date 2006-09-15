@@ -1,11 +1,11 @@
-L3NAME     = ssef
+L3NAME     = altivecf
+CONFIG     = $(L3NAME)
 
-include ../../config/$(L3NAME).conf
+include ../../config/$(CONFIG).conf
 
 L3OBJECT   = ../../dwf-$(L3NAME).o
 
 CDEFS  = -DPREFIX=MIT_$(L3NAME)_
-QMP_TOP=/home/bj/Devel/QCD/install/qmp/HEAD/single
 CEXTRA = $(shell $(QMP_TOP)/bin/qmp-config --ldflags)
 
 LIBS   = -lqdp_d3 -lqdp_int -lqdp_common \
@@ -14,9 +14,17 @@ LIBS   = -lqdp_d3 -lqdp_int -lqdp_common \
          -llime -lm \
          $(shell $(QMP_TOP)/bin/qmp-config --libs)
 
-sources = cg-solver.c cg-solver1.c dwf-op.c
+sources = cg-solver.c \
+          cg-solver1.c \
+          dwf-op.c \
+          dwf-op1.c \
+          dwf-opx.c \
+          dwf-opx1.c \
+          fermions.c \
+          dwf-dd.c \
+          dwf-dd1.c
 
-programs = $(sources:%.c=%-$(L3NAME))
+programs = $(sources:%.c=%-$(CONFIG))
 
 .PHONY: all clean realclean
 
@@ -31,10 +39,10 @@ realclean: clean
 $(programs): % : %.o $(L3OBJECT)
 	$(XCC) $(CFLAGS) $(CINCDIRS) $(COPT) $(CDEFS) $(CEXTRA) -o $@ $^ $(LIBS)
 
-$(sources:%.c=%-$(L3NAME).o): %-$(L3NAME).o: %.c
+$(sources:%.c=%-$(CONFIG).o): %-$(CONFIG).o: %.c
 	$(XCC) $(CFLAGS) $(CINCDIRS) $(COPT) $(CDEFS) $(CEXTRA) -c -o $@ $<
 
 .PHONY: $(L3OBJECT)
 
 $(L3OBJECT):
-	make -C ../.. CONFIG=config/$(L3NAME).conf compile
+	make -C ../.. CONFIG=config/$(CONFIG).conf compile

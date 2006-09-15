@@ -8,7 +8,6 @@ COPT     = "<(COPT)>"
 CINCDIRS = "<(CINCDIRS)>"
 OBJECT   = "<object name>"
 SOURCE   = "<source name>"
-NOWEBDIR = /usr/local/noweb
 
 include $(CONFIG)
 
@@ -26,7 +25,8 @@ interface.h = dwf-ssef.h dwf-ssed.h \
               dwf-bluelightd.h dwf-bluelightf.h \
               dwf-altivecf.h
 
-subdirs = tests/qdpc tests/xqmp tests/bluelight
+TESTS= qdpc xqmp bluelight ssef
+subdirs = $(TESTS:%=tests/%)
 
 .PHONY: all clean realclean tar pdf programs compile
 
@@ -67,16 +67,16 @@ $(f.dvi): %.dvi: %.tex
 	latex $<
 
 $(f.tex): %.tex: %.nw
-	$(NOWEBDIR)/noweave -index -latex -delay $< > $@
+	noweave -index -latex -delay $< > $@
 
 $(interface.h): %.h: interface.nw
-	$(NOWEBDIR)/notangle $(TFLAGS) -R$@ -c $< > $@ \
+	notangle $(TFLAGS) -R$@ -c $< > $@ \
 	|| (rm -f $@ ; exit 1)
 
 $(code.c): %.c: dwf.nw
-	$(NOWEBDIR)/notangle $(TFLAGS) -R$@ -c $< > $@ \
+	notangle $(TFLAGS) -R$@ -c $< > $@ \
 	|| (rm -f $@ ; exit 1)
 
 $(code.h): %.h: dwf.nw
-	$(NOWEBDIR)/notangle $(TFLAGS) -R$@ -c $< > $@ \
+	notangle $(TFLAGS) -R$@ -c $< > $@ \
 	|| (rm -f $@ ; exit 1)

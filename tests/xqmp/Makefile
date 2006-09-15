@@ -1,11 +1,12 @@
 L3NAME     = altivecf
+CONFIG     = $(L3NAME)
 QDP_TOP    = $$HOME/QDP-C
 QIO_TOP    = $(QDP_TOP)
 QLA_TOP    = $(QDP_TOP)
 QMP_TOP    = $(QDP_TOP)
 
 L3OBJECT   = ../../dwf-${L3NAME}.o
-CC     = $(shell $(QDP_TOP)/bin/qla-config --cc)
+CC     = gcc
 
 CFLAGS = -Wall -g -DPREFIX=MIT_$(L3NAME)_ \
          -I$(QDP_TOP)/include -L$(QDP_TOP)/lib \
@@ -42,4 +43,4 @@ $(source:%.c=%.o): %.o: %.c
 .PHONY: $(L3OBJECT)
 
 $(L3OBJECT):
-	make -C ../.. -f mk.$(L3NAME)
+	make -C ../.. CONFIG=config/$(CONFIG).conf compile

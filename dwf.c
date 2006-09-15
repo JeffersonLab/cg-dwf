@@ -1,41 +1,58 @@
 #line 641 "dwf.nw"
 #include <string.h>
 #include <stdlib.h>
-#line 1938 "dwf.nw"
+#line 1943 "dwf.nw"
 #include <qmp.h>
-#line 3003 "dwf.nw"
+#line 2343 "dwf.nw"
+#define LOOP_REIM(m,a ...)   m(a,re) m(a,im)
+#define LOOP_COLOR(m,a ...)  m(a,0) m(a,1) m(a,2)
+#define LOOP_DIRAC(m,a ...)  m(a,0) LOOP1_DIRAC(m,a)
+#define LOOP1_DIRAC(m,a ...) m(a,1) m(a,2) m(a,3)
+#line 2974 "dwf.nw"
 #define COMPUTE_YA(j,t,c) {                \
    REAL *v_re = (REAL *)&rs->f[j][c].re;   \
    REAL *v_im = (REAL *)&rs->f[j][c].im;   \
    BLOCKOF_YA(j,t,c,re)                    \
    BLOCKOF_YA(j,t,c,im) }
-#line 3011 "dwf.nw"
+#line 2982 "dwf.nw"
 #define COMPUTE_YB(j,t,c) {                \
    REAL *v_re = (REAL *)&rs->f[j][c].re;   \
    REAL *v_im = (REAL *)&rs->f[j][c].im;   \
    BLOCKOF_YB(j,t,c,re)                    \
    BLOCKOF_YB(j,t,c,im) }
-#line 3023 "dwf.nw"
+#line 2994 "dwf.nw"
 #define BLOCKOF2_YA(j,t,c,ri)                                             \
   v_##ri[1] = inv_a * v_##ri[1] + b_over_a * yOut[t][c].ri;               \
   yOut[t][c].ri = v_##ri[0] = inv_a * v_##ri[0] + b_over_a * v_##ri[1];
-#line 3029 "dwf.nw"
+#line 3000 "dwf.nw"
 #define BLOCKOF4_YA(j,t,c,ri)                                             \
   v_##ri[3] = inv_a * v_##ri[3] + b_over_a * yOut[t][c].ri;               \
   v_##ri[2] = inv_a * v_##ri[2] + b_over_a * v_##ri[3];                   \
   v_##ri[1] = inv_a * v_##ri[1] + b_over_a * v_##ri[2];                   \
   yOut[t][c].ri = v_##ri[0] = inv_a * v_##ri[0] + b_over_a * v_##ri[1];
-#line 3043 "dwf.nw"
+#line 3014 "dwf.nw"
 #define BLOCKOF2_YB(j,t,c,ri)                                             \
   v_##ri[0] = inv_a * v_##ri[0] + b_over_a * yOut[t][c].ri;               \
   yOut[t][c].ri = v_##ri[1] = inv_a * v_##ri[1] + b_over_a * v_##ri[0];
-#line 3049 "dwf.nw"
+#line 3020 "dwf.nw"
 #define BLOCKOF4_YB(j,t,c,ri)                                             \
   v_##ri[0] = inv_a * v_##ri[0] + b_over_a * yOut[t][c].ri;               \
   v_##ri[1] = inv_a * v_##ri[1] + b_over_a * v_##ri[0];                   \
   v_##ri[2] = inv_a * v_##ri[2] + b_over_a * v_##ri[1];                   \
   yOut[t][c].ri = v_##ri[3] = inv_a * v_##ri[3] + b_over_a * v_##ri[2];
-#line 4165 "dwf.nw"
+#line 3527 "dwf.nw"
+#define LOOP_HALF(m,a ...) m(a,0) m(a,1)
+#line 4143 "dwf.nw"
+#ifdef DEBUG_CG
+#define DEBUG_CG(msg,a ...) do \
+     printf("[%05d] %s:%d:QMP/%s(): " msg, QMP_get_node_number(), \
+                             __FILE__,__LINE__,__FUNCTION__,##a); \
+  while(0);
+#else /* !defined(DEBUG_CG) */
+#define DEBUG_CG(msg,a ...)
+#define NO_DEBUG_CG
+#endif /* defined(DEBUG_CG) */
+           
 #ifdef DEBUG_QMP
 #undef DEBUG_QMP
 #define DEBUG_QMP(msg,a ...) do \
@@ -46,7 +63,7 @@
 #define DEBUG_QMP(msg,a ...)
 #define NO_DEBUG_QMP
 #endif /* defined(DEBUG_QMP) */
-#line 4178 "dwf.nw"
+#line 4166 "dwf.nw"
 #ifdef DEBUG_DWF
 #undef DEBUG_DWF
 #define DEBUG_DWF(msg,a ...) do \
@@ -61,23 +78,23 @@
 struct L3(DWF_Gauge) {
     scalar_complex v[Nc][Nc];
 };
-#line 1024 "dwf.nw"
+#line 1029 "dwf.nw"
 typedef struct {
     vector_complex f[Fd][Nc];
 } vFermion;
-#line 1031 "dwf.nw"
+#line 1036 "dwf.nw"
 typedef struct {
     vector_complex f[Fd/2][Nc];
 } vHalfFermion;
-#line 1038 "dwf.nw"
+#line 1043 "dwf.nw"
 typedef struct {
     scalar_complex v[Nc][Nc];
 } SU3;
-#line 1045 "dwf.nw"
+#line 1050 "dwf.nw"
 typedef struct {
     vector_complex v[Nc][Nc];
 } vSU3;
-#line 1052 "dwf.nw"
+#line 1057 "dwf.nw"
 typedef struct {
     vFermion f;
 } vEvenFermion;
@@ -85,24 +102,24 @@ typedef struct {
 typedef struct {
     vFermion f;
 } vOddFermion;
-#line 1063 "dwf.nw"
+#line 1068 "dwf.nw"
 struct L3(DWF_Fermion) {
     vEvenFermion *even;
     vOddFermion *odd;
 };
-#line 1128 "dwf.nw"
+#line 1133 "dwf.nw"
 struct memblock {
     struct memblock *next;
     struct memblock *prev;
     void *data;
     size_t size;
 };
-#line 1434 "dwf.nw"
+#line 1439 "dwf.nw"
 struct bounds {
     int lo[DIM];
     int hi[DIM];
 };
-#line 1550 "dwf.nw"
+#line 1555 "dwf.nw"
 struct neighbor {
     int              size;            /* size of site table */
     int              inside_size;     /* number of inside sites */
@@ -125,12 +142,12 @@ struct neighbor {
     int              qmp_smask;       /* send flags for qmp_sh[] */
     QMP_msghandle_t  qmp_handle;      /* common send & receive handle */
 };
-#line 1576 "dwf.nw"
+#line 1581 "dwf.nw"
 struct boundary {
     int   index;   /* x-index of this boundary site */
     int   mask;    /* bitmask of the borders */
 };
-#line 1585 "dwf.nw"
+#line 1590 "dwf.nw"
 struct site {
   int Uup;           /* up-links are Uup, Uup+1, Uup+2, Uup+3 */
   int Udown[DIM];    /* four down-links */
@@ -150,21 +167,21 @@ static void (*tfree)(void *ptr);
 static int tlattice[DIM+1];
 #line 850 "dwf.nw"
 static SU3 *U;
-#line 1119 "dwf.nw"
+#line 1124 "dwf.nw"
 static struct memblock memblock = {
     &memblock,
     &memblock,
     NULL,
     0
 };
-#line 1201 "dwf.nw"
+#line 1206 "dwf.nw"
 static int network[DIM];
 static int coord[DIM];
-#line 1414 "dwf.nw"
+#line 1419 "dwf.nw"
 static struct bounds bounds;
 static int gauge_XYZT;
 static int Sv, Sv_1;
-#line 1444 "dwf.nw"
+#line 1449 "dwf.nw"
 static struct neighbor neighbor;
 #ifndef DEBUG_QMP
 static struct neighbor odd_even;
@@ -173,17 +190,17 @@ static struct neighbor even_odd;
 struct neighbor odd_even;
 struct neighbor even_odd;
 #endif
-#line 2192 "dwf.nw"
+#line 2197 "dwf.nw"
 static vOddFermion *auxA_o, *auxB_o, *Phi_o;
 static vEvenFermion *auxA_e;
-#line 2270 "dwf.nw"
+#line 2275 "dwf.nw"
 static vOddFermion *r_o, *p_o, *q_o;
-#line 2291 "dwf.nw"
+#line 2296 "dwf.nw"
 static vEvenFermion *auxB_e;
-#line 2653 "dwf.nw"
+#line 2624 "dwf.nw"
 static REAL inv_a;
 static REAL b_over_a;
-#line 2728 "dwf.nw"
+#line 2699 "dwf.nw"
 static vReal vfx_A;
 static vReal vfx_B;
 static vReal vab;
@@ -199,7 +216,7 @@ collect_add(vFermion *r,
   int i;
   vReal a = vmk_1(A);
 
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < n; i++, r++, x++, y++) {
      r->f[0][0].re = x->f[0][0].re + a * y->f[0][0].re;
      r->f[0][0].im = x->f[0][0].im + a * y->f[0][0].im;
      r->f[0][1].re = x->f[0][1].re + a * y->f[0][1].re;
@@ -229,7 +246,7 @@ collect_add(vFermion *r,
      r->f[3][2].im = x->f[3][2].im + a * y->f[3][2].im;
   }
 }
-#line 974 "dwf.nw"
+#line 979 "dwf.nw"
 static inline void
 collect_dot(double *r_re,
             double *r_im,
@@ -243,42 +260,42 @@ collect_dot(double *r_re,
 
   for (i = 0; i < n; i++, a++, b++) {
     c0_re = a->f[0][0].re*b->f[0][0].re; c0_re += a->f[0][0].im*b->f[0][0].im;
-    c0_im = a->f[0][0].im*b->f[0][0].re; c0_im += a->f[0][0].re*b->f[0][0].im;
+    c0_im = a->f[0][0].re*b->f[0][0].im; c0_im -= a->f[0][0].im*b->f[0][0].re;
     c1_re = a->f[0][1].re*b->f[0][1].re; c1_re += a->f[0][1].im*b->f[0][1].im;
-    c1_im = a->f[0][1].im*b->f[0][1].re; c1_im += a->f[0][1].re*b->f[0][1].im;
+    c1_im = a->f[0][1].re*b->f[0][1].im; c1_im -= a->f[0][1].im*b->f[0][1].re;
     c2_re = a->f[0][2].re*b->f[0][2].re; c2_re += a->f[0][2].im*b->f[0][2].im;
-    c2_im = a->f[0][2].im*b->f[0][2].re; c2_im += a->f[0][2].re*b->f[0][2].im;
+    c2_im = a->f[0][2].re*b->f[0][2].im; c2_im -= a->f[0][2].im*b->f[0][2].re;
 
     c0_re += a->f[1][0].re*b->f[1][0].re; c0_re += a->f[1][0].im*b->f[1][0].im;
-    c0_im += a->f[1][0].im*b->f[1][0].re; c0_im += a->f[1][0].re*b->f[1][0].im;
+    c0_im += a->f[1][0].re*b->f[1][0].im; c0_im -= a->f[1][0].im*b->f[1][0].re;
     c1_re += a->f[1][1].re*b->f[1][1].re; c1_re += a->f[1][1].im*b->f[1][1].im;
-    c1_im += a->f[1][1].im*b->f[1][1].re; c1_im += a->f[1][1].re*b->f[1][1].im;
+    c1_im += a->f[1][1].re*b->f[1][1].im; c1_im -= a->f[1][1].im*b->f[1][1].re;
     c2_re += a->f[1][2].re*b->f[1][2].re; c2_re += a->f[1][2].im*b->f[1][2].im;
-    c2_im += a->f[1][2].im*b->f[1][2].re; c2_im += a->f[1][2].re*b->f[1][2].im;
+    c2_im += a->f[1][2].re*b->f[1][2].im; c2_im -= a->f[1][2].im*b->f[1][2].re;
 
     c0_re += a->f[2][0].re*b->f[2][0].re; c0_re += a->f[2][0].im*b->f[2][0].im;
-    c0_im += a->f[2][0].im*b->f[2][0].re; c0_im += a->f[2][0].re*b->f[2][0].im;
+    c0_im += a->f[2][0].re*b->f[2][0].im; c0_im -= a->f[2][0].im*b->f[2][0].re;
     c1_re += a->f[2][1].re*b->f[2][1].re; c1_re += a->f[2][1].im*b->f[2][1].im;
-    c1_im += a->f[2][1].im*b->f[2][1].re; c1_im += a->f[2][1].re*b->f[2][1].im;
+    c1_im += a->f[2][1].re*b->f[2][1].im; c1_im -= a->f[2][1].im*b->f[2][1].re;
     c2_re += a->f[2][2].re*b->f[2][2].re; c2_re += a->f[2][2].im*b->f[2][2].im;
-    c2_im += a->f[2][2].im*b->f[2][2].re; c2_im += a->f[2][2].re*b->f[2][2].im;
+    c2_im += a->f[2][2].re*b->f[2][2].im; c2_im -= a->f[2][2].im*b->f[2][2].re;
 
     c0_re += a->f[3][0].re*b->f[3][0].re; c0_re += a->f[3][0].im*b->f[3][0].im;
-    c0_im += a->f[3][0].im*b->f[3][0].re; c0_im += a->f[3][0].re*b->f[3][0].im;
+    c0_im += a->f[3][0].re*b->f[3][0].im; c0_im -= a->f[3][0].im*b->f[3][0].re;
     c1_re += a->f[3][1].re*b->f[3][1].re; c1_re += a->f[3][1].im*b->f[3][1].im;
-    c1_im += a->f[3][1].im*b->f[3][1].re; c1_im += a->f[3][1].re*b->f[3][1].im;
+    c1_im += a->f[3][1].re*b->f[3][1].im; c1_im -= a->f[3][1].im*b->f[3][1].re;
     c2_re += a->f[3][2].re*b->f[3][2].re; c2_re += a->f[3][2].im*b->f[3][2].im;
-    c2_im += a->f[3][2].im*b->f[3][2].re; c2_im += a->f[3][2].re*b->f[3][2].im;
+    c2_im += a->f[3][2].re*b->f[3][2].im; c2_im -= a->f[3][2].im*b->f[3][2].re;
 
     *r_re += vsum(c0_re + c1_re + c2_re);
     *r_im += vsum(c0_im + c1_im + c2_im);
   }
 }
-#line 1138 "dwf.nw"
+#line 1143 "dwf.nw"
 static vEvenFermion *allocate_even_fermion(void);
 static vOddFermion *allocate_odd_fermion(void);
 static L3(DWF_Gauge) *allocate_gauge_field(void);
-#line 1322 "dwf.nw"
+#line 1327 "dwf.nw"
 static inline vReal
 import_vector(const void *z, void *env, L3(DWF_fermion_reader) reader,
               int x[DIM+1], int c, int d, int re_im)
@@ -293,7 +310,7 @@ import_vector(const void *z, void *env, L3(DWF_fermion_reader) reader,
     x[DIM] = xs;
     return f;
 }
-#line 1371 "dwf.nw"
+#line 1376 "dwf.nw"
 static inline void
 save_vector(void *z, void *env, L3(DWF_fermion_writer) writer,
             int x[DIM+1], int c, int d, int re_im, vReal *f)
@@ -306,7 +323,7 @@ save_vector(void *z, void *env, L3(DWF_fermion_writer) writer,
     }
     x[DIM] = xs;
 }
-#line 1455 "dwf.nw"
+#line 1460 "dwf.nw"
 static inline int
 lattice_start(int lat, int net, int coord)
 {
@@ -327,27 +344,27 @@ mk_sublattice(struct bounds *bounds,
         bounds->hi[i] = lattice_start(tlattice[i], network[i], coord[i] + 1);
     }
 }
-#line 1479 "dwf.nw"
+#line 1484 "dwf.nw"
 static void
 init_neighbor(struct bounds *bounds, struct neighbor *neighbor);
-#line 1608 "dwf.nw"
+#line 1613 "dwf.nw"
 static void build_neighbor(struct neighbor *out,
 	                   int              parity,
 	                   struct neighbor *in);
-#line 1716 "dwf.nw"
+#line 1721 "dwf.nw"
 static void construct_rec(struct neighbor *out,
                           int par,
                           struct bounds *bounds,
                           int dir,
                           int step);
-#line 1780 "dwf.nw"
+#line 1785 "dwf.nw"
 static void construct_snd(struct neighbor *out,
                           struct neighbor *in,
                           int par,
                           struct bounds *bounds,
                           int dir,
                           int step);
-#line 1867 "dwf.nw"
+#line 1872 "dwf.nw"
 static int
 to_HFlinear(int p[],
             struct bounds *b,
@@ -366,7 +383,7 @@ to_HFlinear(int p[],
     }
     return x / 2;
 }
-#line 1890 "dwf.nw"
+#line 1895 "dwf.nw"
 static int
 to_Ulinear(int p[],
            struct bounds *b,
@@ -376,7 +393,7 @@ to_Ulinear(int p[],
 
     if ((q < 0) || (p[q] > b->lo[q]) || (network[q] < 2)) {
         
-#line 1906 "dwf.nw"
+#line 1911 "dwf.nw"
 for (x = 0, d = DIM; d--;) {
     int s = b->hi[d] - b->lo[d];
     int v = p[d] - ((q == d)?1:0);
@@ -385,10 +402,10 @@ for (x = 0, d = DIM; d--;) {
     x = x * s + v - b->lo[d];
 }
 return DIM * x + ((q < 0)?0:q);
-#line 1899 "dwf.nw"
+#line 1904 "dwf.nw"
     } else {
         
-#line 1918 "dwf.nw"
+#line 1923 "dwf.nw"
 int s0, v0;
 for (d = 0, v0 = 1; d < DIM; d++)
      v0 *= b->hi[d] - b->lo[d];
@@ -406,24 +423,24 @@ for (d = DIM, x = 0; d--;) {
     x = x * s + v - b->lo[d];
 }
 return s0 + x;
-#line 1901 "dwf.nw"
+#line 1906 "dwf.nw"
     }
 }
-#line 1949 "dwf.nw"
+#line 1954 "dwf.nw"
 static int build_buffers(struct neighbor *nb);
-#line 2027 "dwf.nw"
+#line 2032 "dwf.nw"
 static int make_buffer(struct neighbor *nb, int size);
-#line 2048 "dwf.nw"
+#line 2053 "dwf.nw"
 static int make_send(struct neighbor *nb, int k, int i, int d,
                      QMP_msghandle_t SRh[4*DIM], int Nsr);
-#line 2070 "dwf.nw"
+#line 2075 "dwf.nw"
 static int make_receive(struct neighbor *nb, int k, int i, int d,
                         QMP_msghandle_t SRh[4*DIM], int Nsr);
-#line 2107 "dwf.nw"
+#line 2112 "dwf.nw"
 static void sse_aligned_buffer(struct neighbor *nb, int k, int size);
-#line 2137 "dwf.nw"
+#line 2142 "dwf.nw"
 static void free_buffers(struct neighbor *nb);
-#line 2214 "dwf.nw"
+#line 2219 "dwf.nw"
 static int cg(vOddFermion *psi,
               const vOddFermion *b,
               const vOddFermion *x0,
@@ -432,56 +449,56 @@ static int cg(vOddFermion *psi,
               int max_iter,
               double *out_eps,
               int *out_iter);
-#line 2304 "dwf.nw"
+#line 2308 "dwf.nw"
 static void copy_o(vOddFermion *dst, const vOddFermion *src);
-#line 2323 "dwf.nw"
+#line 2324 "dwf.nw"
 static void compute_sum2_o(vOddFermion *dst, double alpha, const vOddFermion *src);
-#line 2341 "dwf.nw"
+#line 2352 "dwf.nw"
 static void compute_sum2x_o(vOddFermion *dst, const vOddFermion *src, double alpha);
-#line 2360 "dwf.nw"
+#line 2373 "dwf.nw"
 static void compute_sum_e(vEvenFermion *d,
                           const vEvenFermion *x, double alpha, const vEvenFermion *y);
 static void compute_sum_o(vOddFermion *d,
                           const vOddFermion *x, double alpha, const vOddFermion *y);
-#line 2402 "dwf.nw"
+#line 2417 "dwf.nw"
 static void compute_sum_oN(vOddFermion *d, double *norm,
                            const vOddFermion *x, double alpha, const vOddFermion *y);
-#line 2455 "dwf.nw"
+#line 2448 "dwf.nw"
 static void compute_sum2_oN(vOddFermion *d, double *norm,
                             double alpha, const vOddFermion *y);
-#line 2511 "dwf.nw"
+#line 2482 "dwf.nw"
 static void compute_MxM(vOddFermion *eta, double *norm,
                         const vOddFermion *psi);
 static void compute_M(vOddFermion *eta, double *norm,
                       const vOddFermion *psi);
 static void compute_Mx(vOddFermion *eta,
                        const vOddFermion *psi);
-#line 2552 "dwf.nw"
+#line 2523 "dwf.nw"
 static void compute_Qxx1(vFermion *eta, const vFermion *psi, int xyzt);
 static void inline compute_Qee1(vEvenFermion *eta, const vEvenFermion *psi)
 {
     compute_Qxx1(&eta->f, &psi->f, even_odd.size);
 }
-#line 2560 "dwf.nw"
+#line 2531 "dwf.nw"
 static void inline compute_Qoo1(vOddFermion *eta, const vOddFermion *psi)
 {
     compute_Qxx1(&eta->f, &psi->f, odd_even.size);
 }
-#line 2584 "dwf.nw"
+#line 2555 "dwf.nw"
 static void compute_Soo1(vOddFermion *eta, const vOddFermion *psi);
-#line 3066 "dwf.nw"
+#line 3037 "dwf.nw"
 static void compute_Qxy(vFermion *d, const vFermion *s, struct neighbor *nb);
-#line 3070 "dwf.nw"
+#line 3041 "dwf.nw"
 static void inline compute_Qoe(vOddFermion *d, const vEvenFermion *s)
 {
     compute_Qxy(&d->f, &s->f, &odd_even);
 }
-#line 3077 "dwf.nw"
+#line 3048 "dwf.nw"
 static void inline compute_Qeo(vEvenFermion *d, const vOddFermion *s)
 {
     compute_Qxy(&d->f, &s->f, &even_odd);
 }
-#line 3084 "dwf.nw"
+#line 3055 "dwf.nw"
 static void compute_1Sxy(vFermion *d,
                          const vFermion *q,
 			 const vFermion *s,
@@ -492,7 +509,7 @@ static void inline compute_1Soe(vOddFermion *d,
 {
     compute_1Sxy(&d->f, &q->f, &s->f, &odd_even);
 }
-#line 3269 "dwf.nw"
+#line 3240 "dwf.nw"
 static void compute_Dx(vFermion *chi,
                        const vFermion *eta,
                        const vFermion *psi,
@@ -503,14 +520,14 @@ static void inline compute_De(vEvenFermion *chi,
 {
     compute_Dx(&chi->f, &eta->f, &psi->f, &even_odd);
 }
-#line 3283 "dwf.nw"
+#line 3254 "dwf.nw"
 static void inline compute_Do(vOddFermion *chi,
                               const vOddFermion *eta,
                               const vEvenFermion *psi)
 {
     compute_Dx(&chi->f, &eta->f, &psi->f, &odd_even);
 }
-#line 3293 "dwf.nw"
+#line 3264 "dwf.nw"
 static void compute_Dcx(vFermion *chi,
                         const vFermion *eta,
                         const vFermion *psi,
@@ -521,14 +538,14 @@ static void inline compute_Dce(vEvenFermion *chi,
 {
     compute_Dcx(&chi->f, &eta->f, &psi->f, &even_odd);
 }
-#line 3307 "dwf.nw"
+#line 3278 "dwf.nw"
 static void inline compute_Dco(vOddFermion *chi,
                                const vOddFermion *eta,
                                const vEvenFermion *psi)
 {
     compute_Dcx(&chi->f, &eta->f, &psi->f, &odd_even);
 }
-#line 3984 "dwf.nw"
+#line 3953 "dwf.nw"
 static void compute_Qxx1Qxy(vFermion *d,
                             const vFermion *s,
                             struct neighbor *nb);
@@ -557,7 +574,7 @@ static void inline compute_1Qoo1Qoe(vOddFermion *d,
 {
   compute_1Qxx1Qxy(&d->f, norm, &q->f, &s->f, &odd_even);
 }
-#line 4119 "dwf.nw"
+#line 4097 "dwf.nw"
 static inline int
 parity(const int x[DIM])
 {
@@ -566,7 +583,7 @@ parity(const int x[DIM])
         v += x[i];
     return v & 1;
 } 
-#line 4131 "dwf.nw"
+#line 4109 "dwf.nw"
 static double
 d_pow(double x, unsigned int n)
 {
@@ -580,7 +597,7 @@ d_pow(double x, unsigned int n)
      }
      return v;
 }
-#line 4148 "dwf.nw"
+#line 4126 "dwf.nw"
 static inline void 
 vhfzero(vHalfFermion *v)
 {
@@ -593,7 +610,13 @@ vhfzero(vHalfFermion *v)
    v->f[1][1].re = v->f[1][1].im = 
    v->f[1][2].re = v->f[1][2].im = z;
 }
-#line 1075 "dwf.nw"
+#line 4186 "dwf.nw"
+#ifndef NO_DEBUG_QMP
+static void cleanup_receivers(struct neighbor *nb);
+static void cleanup_senders(struct neighbor *nb);
+static void dump_buffers(const char *name, struct neighbor *nb);
+#endif
+#line 1080 "dwf.nw"
 static void *
 alloc16(int size)
 {
@@ -612,7 +635,7 @@ alloc16(int size)
 	
     return p->data;
 }
-#line 1096 "dwf.nw"
+#line 1101 "dwf.nw"
 static void
 free16(void *ptr)
 {
@@ -631,7 +654,7 @@ free16(void *ptr)
     }
     /* this is BAD: control should not reach here! */
 }
-#line 1144 "dwf.nw"
+#line 1149 "dwf.nw"
 vEvenFermion *
 allocate_even_fermion(void)
 {
@@ -649,7 +672,7 @@ allocate_gauge_field(void)
 {
     return alloc16(gauge_XYZT * sizeof (L3(DWF_Gauge)));
 }
-#line 1397 "dwf.nw"
+#line 1402 "dwf.nw"
 static int
 init_tables(void)
 {
@@ -658,7 +681,7 @@ init_tables(void)
 
     init_neighbor(&bounds, &neighbor);
     
-#line 1419 "dwf.nw"
+#line 1424 "dwf.nw"
 Sv = tlattice[DIM] / Vs;
 Sv_1 = Sv - 1;
 for (v = 1, i = 0; i < DIM; i++) {
@@ -670,14 +693,14 @@ for (i = 0; i < DIM; i++) {
         continue;
     gauge_XYZT += v / (bounds.hi[i] - bounds.lo[i]);
 }
-#line 1405 "dwf.nw"
+#line 1410 "dwf.nw"
     tmp = neighbor;
     build_neighbor(&even_odd, 0, &tmp);
     build_neighbor(&odd_even, 1, &tmp);
 
     return 0;
 }
-#line 1483 "dwf.nw"
+#line 1488 "dwf.nw"
 static void
 init_neighbor(struct bounds *bounds, struct neighbor *neighbor)
 {
@@ -691,7 +714,7 @@ init_neighbor(struct bounds *bounds, struct neighbor *neighbor)
 #endif /* defined(DEBUG_QMP) */
     neighbor->qmp_smask = 0;
     
-#line 1502 "dwf.nw"
+#line 1507 "dwf.nw"
 for (neighbor->size = 1, neighbor->inside_size = 1, i = 0; i < DIM; i++) {
     int ext = bounds->hi[i] - bounds->lo[i];
 
@@ -703,33 +726,33 @@ for (neighbor->size = 1, neighbor->inside_size = 1, i = 0; i < DIM; i++) {
 }
 neighbor->boundary_size = neighbor->size - neighbor->inside_size;
 neighbor->site = tmalloc(neighbor->size * sizeof (struct site));
-#ifdef DEBUG_QMP
+#ifndef NO_DEBUG_QMP
 memset(neighbor->site, -1, neighbor->size * sizeof (struct site));
 #endif
-#line 1496 "dwf.nw"
+#line 1501 "dwf.nw"
     
-#line 1518 "dwf.nw"
+#line 1523 "dwf.nw"
 if (neighbor->inside_size)
     neighbor->inside = tmalloc(neighbor->inside_size * sizeof (int));
 else
     neighbor->inside = 0;
-#line 1497 "dwf.nw"
+#line 1502 "dwf.nw"
     
-#line 1524 "dwf.nw"
+#line 1529 "dwf.nw"
 if (neighbor->boundary_size)
     neighbor->boundary = tmalloc(neighbor->boundary_size * sizeof (struct boundary));
 else
     neighbor->boundary = 0;
-#line 1498 "dwf.nw"
+#line 1503 "dwf.nw"
     
-#line 1530 "dwf.nw"
+#line 1535 "dwf.nw"
 for (i = 0; i < 2 * DIM; i++) {
     int d = i / 2;
 
     if (network[d] > 1) {
         neighbor->snd_size[i] = neighbor->size / (bounds->hi[d] - bounds->lo[d]);
         neighbor->snd[i] = tmalloc(neighbor->snd_size[i] * sizeof (int));
-#ifdef DEBUG_QMP
+#ifndef NO_DEBUG_QMP
 	memset(neighbor->snd[i], -1, neighbor->snd_size[i] * sizeof (int));
 #endif
     } else {
@@ -739,9 +762,9 @@ for (i = 0; i < 2 * DIM; i++) {
     DEBUG_QMP("Compute send sizes... snd_size[%d]=%d\n",
               i, neighbor->snd_size[i])
 }
-#line 1499 "dwf.nw"
+#line 1504 "dwf.nw"
 }
-#line 1594 "dwf.nw"
+#line 1599 "dwf.nw"
 static void
 build_neighbor(struct neighbor *out,
 	       int              par,
@@ -751,7 +774,7 @@ build_neighbor(struct neighbor *out,
    int x[DIM];
 
    
-#line 1615 "dwf.nw"
+#line 1620 "dwf.nw"
 *out = *in;
 out->size = 0;
 out->inside_size = 0;
@@ -760,21 +783,21 @@ for (d = 0; d < DIM; d++) {
   out->rcv_size[2*d] = out->snd_size[2*d] = 0;
   out->rcv_size[2*d+1] = out->snd_size[2*d+1] = 0;
 }
-#line 1603 "dwf.nw"
+#line 1608 "dwf.nw"
    
-#line 1235 "dwf.nw"
+#line 1240 "dwf.nw"
 for (i = 0; i < DIM; i++)
     x[i] = bounds.lo[i];
 for (i = 0; i < DIM;) {
-#line 1627 "dwf.nw"
+#line 1632 "dwf.nw"
     
-#line 1646 "dwf.nw"
+#line 1651 "dwf.nw"
 s = parity(x);
 if (s != par)
     goto next;
-#line 1628 "dwf.nw"
+#line 1633 "dwf.nw"
     
-#line 1654 "dwf.nw"
+#line 1659 "dwf.nw"
 p = to_HFlinear(x, &bounds, -1, 0);
 for (m = 0, d = 0; d < DIM; d++) {
     if (network[d] > 1) {
@@ -784,29 +807,29 @@ for (m = 0, d = 0; d < DIM; d++) {
             m |= 1 << (2 * d + 1);
     }
 }
-#line 1629 "dwf.nw"
+#line 1634 "dwf.nw"
     DEBUG_QMP("A: x[%d %d %d %d], (s,par)=(%d,%d), p=%d\n",
                x[0], x[1], x[2], x[3], s, par, p)
     
-#line 1667 "dwf.nw"
+#line 1672 "dwf.nw"
 if (m) {
     
-#line 1683 "dwf.nw"
+#line 1688 "dwf.nw"
 in->boundary->index = p;
 in->boundary->mask = m;
 in->boundary++;
 out->boundary_size++;
-#line 1669 "dwf.nw"
+#line 1674 "dwf.nw"
 } else {
     
-#line 1676 "dwf.nw"
+#line 1681 "dwf.nw"
 *in->inside++ = p;
 out->inside_size++;
-#line 1671 "dwf.nw"
+#line 1676 "dwf.nw"
 }
-#line 1632 "dwf.nw"
+#line 1637 "dwf.nw"
     
-#line 1691 "dwf.nw"
+#line 1696 "dwf.nw"
 in->site->Uup = to_Ulinear(x, &bounds, -1);
 for (d = 0; d < DIM; d++) {
     in->site->Udown[d] = to_Ulinear(x, &bounds, d);
@@ -815,24 +838,24 @@ for (d = 0; d < DIM; d++) {
     if ((m & (1 << (2 * d + 1))) == 0)
         in->site->F[2*d + 1] = Sv * to_HFlinear(x, &bounds, d, +1);
 }
-#line 1633 "dwf.nw"
+#line 1638 "dwf.nw"
     out->size++;
     in->site++;
   next:
-#line 1241 "dwf.nw"
+#line 1246 "dwf.nw"
     for (i = 0; i < DIM; i++) {
         
-#line 1258 "dwf.nw"
+#line 1263 "dwf.nw"
 if (++x[i] == bounds.hi[i])
     x[i] = bounds.lo[i];
 else
     break;
-#line 1243 "dwf.nw"
+#line 1248 "dwf.nw"
     }
 }
-#line 1604 "dwf.nw"
+#line 1609 "dwf.nw"
    
-#line 1704 "dwf.nw"
+#line 1709 "dwf.nw"
 for (d = 0; d < DIM; d++) {
     if (network[d] < 2)
         continue;
@@ -841,9 +864,9 @@ for (d = 0; d < DIM; d++) {
     construct_rec(out, par, &bounds, d, -1);
     construct_snd(out, in, par, &bounds, d, -1);
 }
-#line 1605 "dwf.nw"
+#line 1610 "dwf.nw"
 }
-#line 1723 "dwf.nw"
+#line 1728 "dwf.nw"
 static void
 construct_rec(struct neighbor *out,
               int par,
@@ -857,7 +880,7 @@ construct_rec(struct neighbor *out,
      int dz = dir * 2 + ((step>0)?1:0);
 
      
-#line 1749 "dwf.nw"
+#line 1754 "dwf.nw"
 for (d = 0; d < DIM; d++) {
     int v = coord[d] + ((d==dir)?step:0);
 
@@ -873,34 +896,34 @@ mk_sublattice(&xb, xc);
    for (d = 0; d < DIM; d++)
       DEBUG_QMP("neighbor: xb[%d] lo %d, di %d\n", d, xb.lo[d], xb.hi[d])
 #endif /* defined(DEBUG_QMP) */
-#line 1736 "dwf.nw"
+#line 1741 "dwf.nw"
      
-#line 1767 "dwf.nw"
+#line 1772 "dwf.nw"
 for (d = 0; d < DIM; d++)
     x[d] = ((d == dir) && (step < 0))? (xb.hi[d] - 1): xb.lo[d];
-#line 1737 "dwf.nw"
+#line 1742 "dwf.nw"
      
-#line 1815 "dwf.nw"
+#line 1820 "dwf.nw"
 for (k = 0, d = 0; d < DIM; ) {
-#line 1738 "dwf.nw"
+#line 1743 "dwf.nw"
          
-#line 1641 "dwf.nw"
+#line 1646 "dwf.nw"
 s = parity(x);
 if (s == par)
     goto next;
-#line 1739 "dwf.nw"
+#line 1744 "dwf.nw"
          
-#line 1771 "dwf.nw"
+#line 1776 "dwf.nw"
 p = to_HFlinear(x, bounds, dir, -step);
-#line 1740 "dwf.nw"
+#line 1745 "dwf.nw"
          DEBUG_QMP("B: x[%d %d %d %d], (s,par)=(%d,%d), p=%d, k=%d\n",
                    x[0], x[1], x[2], x[3], s, par, p, k)
          
-#line 1774 "dwf.nw"
+#line 1779 "dwf.nw"
 out->site[p].F[dz] = Sv * k++;
-#line 1743 "dwf.nw"
+#line 1748 "dwf.nw"
      
-#line 1818 "dwf.nw"
+#line 1823 "dwf.nw"
   next:
     for (d = 0; d < DIM; d++) {
         if (d == dir)
@@ -911,10 +934,10 @@ out->site[p].F[dz] = Sv * k++;
             break;
     }
 }
-#line 1744 "dwf.nw"
-     out->rcv_size[dz^1] = k;
+#line 1749 "dwf.nw"
+     out->rcv_size[dz] = k;
 }
-#line 1788 "dwf.nw"
+#line 1793 "dwf.nw"
 static void
 construct_snd(struct neighbor *out,
               struct neighbor *in,
@@ -929,7 +952,7 @@ construct_snd(struct neighbor *out,
      int dz = dir * 2 + ((step>0)?1:0);
 
      
-#line 1749 "dwf.nw"
+#line 1754 "dwf.nw"
 for (d = 0; d < DIM; d++) {
     int v = coord[d] + ((d==dir)?step:0);
 
@@ -945,32 +968,32 @@ mk_sublattice(&xb, xc);
    for (d = 0; d < DIM; d++)
       DEBUG_QMP("neighbor: xb[%d] lo %d, di %d\n", d, xb.lo[d], xb.hi[d])
 #endif /* defined(DEBUG_QMP) */
-#line 1802 "dwf.nw"
+#line 1807 "dwf.nw"
      
-#line 1767 "dwf.nw"
+#line 1772 "dwf.nw"
 for (d = 0; d < DIM; d++)
     x[d] = ((d == dir) && (step < 0))? (xb.hi[d] - 1): xb.lo[d];
-#line 1803 "dwf.nw"
+#line 1808 "dwf.nw"
      
-#line 1815 "dwf.nw"
+#line 1820 "dwf.nw"
 for (k = 0, d = 0; d < DIM; ) {
-#line 1804 "dwf.nw"
+#line 1809 "dwf.nw"
          
-#line 1646 "dwf.nw"
+#line 1651 "dwf.nw"
 s = parity(x);
 if (s != par)
     goto next;
-#line 1805 "dwf.nw"
+#line 1810 "dwf.nw"
          
-#line 1771 "dwf.nw"
+#line 1776 "dwf.nw"
 p = to_HFlinear(x, bounds, dir, -step);
-#line 1806 "dwf.nw"
+#line 1811 "dwf.nw"
          DEBUG_QMP("C: x[%d %d %d %d], (s,par)=(%d,%d), p=%d, k=%d\n",
                    x[0], x[1], x[2], x[3], s, par, p, k)
          *in->snd[dz]++ = p * Sv;
          k++;
      
-#line 1818 "dwf.nw"
+#line 1823 "dwf.nw"
   next:
     for (d = 0; d < DIM; d++) {
         if (d == dir)
@@ -981,10 +1004,10 @@ p = to_HFlinear(x, bounds, dir, -step);
             break;
     }
 }
-#line 1811 "dwf.nw"
+#line 1816 "dwf.nw"
      out->snd_size[dz] = k;
 }
-#line 1952 "dwf.nw"
+#line 1957 "dwf.nw"
 static int
 build_buffers(struct neighbor *nb)
 {
@@ -1011,7 +1034,7 @@ build_buffers(struct neighbor *nb)
             case 1: break;
             case 2:
                  
-#line 1993 "dwf.nw"
+#line 1998 "dwf.nw"
 DEBUG_QMP("Allocate up and down buffers, i=%d\n", i)
 k = make_buffer(nb, nb->snd_size[2*i] + nb->snd_size[2*i+1]);
 nb->snd_buf[2*i] = nb->qmp_buf[k];
@@ -1022,12 +1045,12 @@ k = make_buffer(nb, nb->rcv_size[2*i] + nb->rcv_size[2*i+1]);
 nb->rcv_buf[2*i+1] = nb->qmp_buf[k]; /* should be opposite to snd_buf[] */
 nb->rcv_buf[2*i] = nb->rcv_buf[2*i+1] + Sv * nb->rcv_size[2*i+1];
 Nh = make_receive(nb, k, i, -1, SRh, Nh); /* -1 fixes a bug in GigE QMP */
-#line 1978 "dwf.nw"
+#line 1983 "dwf.nw"
                  break;
             default:
 	         /* Order here is important */
                  
-#line 2016 "dwf.nw"
+#line 2021 "dwf.nw"
 DEBUG_QMP("Allocate down buffers, i=%d\n", i)
 k = make_buffer(nb, nb->snd_size[2*i]);
 nb->snd_buf[2*i] = nb->qmp_buf[k];
@@ -1036,9 +1059,9 @@ Nh = make_send(nb, k, i, -1, SRh, Nh);
 k = make_buffer(nb, nb->rcv_size[2*i]);
 nb->rcv_buf[2*i] = nb->qmp_buf[k];
 Nh = make_receive(nb, k, i, -1, SRh, Nh);
-#line 1982 "dwf.nw"
+#line 1987 "dwf.nw"
                  
-#line 2006 "dwf.nw"
+#line 2011 "dwf.nw"
 DEBUG_QMP("Allocate up buffers, i=%d\n", i)
 k = make_buffer(nb, nb->snd_size[2*i+1]);
 nb->snd_buf[2*i+1] = nb->qmp_buf[k];
@@ -1047,12 +1070,12 @@ Nh = make_send(nb, k, i, +1, SRh, Nh);
 k = make_buffer(nb, nb->rcv_size[2*i+1]);
 nb->rcv_buf[2*i+1] = nb->qmp_buf[k];
 Nh = make_receive(nb, k, i, +1, SRh, Nh);
-#line 1983 "dwf.nw"
+#line 1988 "dwf.nw"
                  break;
         }
     }
     
-#line 2088 "dwf.nw"
+#line 2093 "dwf.nw"
 if (nb->qmp_smask) {
     nb->qmp_handle = QMP_declare_multiple(SRh, Nh);
 #ifndef NO_DEBUG_QMP
@@ -1065,10 +1088,10 @@ if (nb->qmp_smask) {
     }
 #endif
 }
-#line 1987 "dwf.nw"
+#line 1992 "dwf.nw"
     return 0;
 }
-#line 2030 "dwf.nw"
+#line 2035 "dwf.nw"
 static int
 make_buffer(struct neighbor *nb, int size)
 {
@@ -1083,7 +1106,7 @@ make_buffer(struct neighbor *nb, int size)
               nb->qmp_buf[N], bcount, (int)nb->qmp_mm[N])
     return N;  
 }
-#line 2052 "dwf.nw"
+#line 2057 "dwf.nw"
 static int
 make_send(struct neighbor *nb, int k, int i, int d,
           QMP_msghandle_t SRh[4*DIM], int Nsr)
@@ -1098,7 +1121,7 @@ make_send(struct neighbor *nb, int k, int i, int d,
 
     return Nsr+1;
 }
-#line 2074 "dwf.nw"
+#line 2079 "dwf.nw"
 static int
 make_receive(struct neighbor *nb, int k, int i, int d,
              QMP_msghandle_t SRh[4*DIM], int Nsr)
@@ -1110,7 +1133,7 @@ make_receive(struct neighbor *nb, int k, int i, int d,
 
     return Nsr+1;
 }
-#line 2110 "dwf.nw"
+#line 2115 "dwf.nw"
 static void
 sse_aligned_buffer(struct neighbor *nb, int k, int size)
 {
@@ -1128,22 +1151,22 @@ sse_aligned_buffer(struct neighbor *nb, int k, int size)
   DEBUG_QMP("(%p,%d,%d): ptr: %p\n",
 	    nb, k, size, (void *)nb->qmp_buf[k])
 }
-#line 2140 "dwf.nw"
+#line 2145 "dwf.nw"
 static void
 free_buffers(struct neighbor *nb)
 {
    int i;
 
    
-#line 2155 "dwf.nw"
+#line 2160 "dwf.nw"
 if (nb->qmp_handle) {
    QMP_free_msghandle(nb->qmp_handle);
    DEBUG_QMP("free_msghandle(0x%x) / common receive handle\n",
              (int)nb->qmp_handle)
 }
-#line 2146 "dwf.nw"
+#line 2151 "dwf.nw"
    
-#line 2163 "dwf.nw"
+#line 2168 "dwf.nw"
 for (i = nb->Nx; i--;) {
        if (nb->qmp_mm[i])
           QMP_free_msgmem(nb->qmp_mm[i]);
@@ -1157,9 +1180,9 @@ for (i = nb->Nx; i--;) {
 #endif
        DEBUG_QMP("free_memory(0x%x)\n", (int)nb->qmp_xbuf[i]);       
 }
-#line 2147 "dwf.nw"
+#line 2152 "dwf.nw"
 }
-#line 2224 "dwf.nw"
+#line 2229 "dwf.nw"
 static int
 cg(vOddFermion *x_o,
    const vOddFermion *b,
@@ -1179,24 +1202,24 @@ cg(vOddFermion *x_o,
     compute_sum_oN(r_o, &rho, b, -1, p_o);
     copy_o(p_o, r_o);
     
-#line 4067 "dwf.nw"
+#line 4036 "dwf.nw"
 /* relax, QMP does not support split reductions yet. */
 
-#line 2244 "dwf.nw"
+#line 2249 "dwf.nw"
     for (k = 0; (k < N0) || ((rho > epsilon) && (k < N)); k++) {
         compute_MxM(q_o, &norm_z, p_o);
         
-#line 4067 "dwf.nw"
+#line 4036 "dwf.nw"
 /* relax, QMP does not support split reductions yet. */
-#line 2247 "dwf.nw"
+#line 2252 "dwf.nw"
         alpha = rho / norm_z;
         compute_sum2_oN(r_o, &gamma, -alpha, q_o);
         compute_sum2_o(x_o, alpha, p_o);
         
-#line 4067 "dwf.nw"
+#line 4036 "dwf.nw"
 /* relax, QMP does not support split reductions yet. */
-#line 2251 "dwf.nw"
-        DEBUG_DWF("cg loop: k=%d, rho=%g, norm_z=%g, alpha=%g, gamma=%g\n",
+#line 2256 "dwf.nw"
+        DEBUG_CG("cg loop: k %d , rho %g , norm_z %g , alpha %g , gamma %g\n",
                    k, rho, norm_z, alpha, gamma)
         if (gamma <= epsilon) {
             rho = gamma;
@@ -1212,70 +1235,73 @@ cg(vOddFermion *x_o,
 
     return status;
 }
-#line 2307 "dwf.nw"
+#line 2311 "dwf.nw"
 static void
 copy_o(vOddFermion *dst, const vOddFermion *src)
 {
-  int i = odd_even.size * Sv * sizeof (vOddFermion) / sizeof (vReal);
-  vReal *d = (vReal *)dst;
-  const vReal *s = (const vReal *)src;
+  int size = odd_even.size * Sv * sizeof (vOddFermion);
 
-  for ( ;i--;)
-      *d++ = *s++;
+  memcpy(dst, src, size);
 }
-#line 2326 "dwf.nw"
+#line 2327 "dwf.nw"
 static void
 compute_sum2_o(vOddFermion *dst, double alpha, const vOddFermion *src)
 {
-  int i = odd_even.size * Sv * sizeof (vOddFermion) / sizeof (vReal);
   vReal a = vmk_1(alpha);
-  vReal *d = (vReal *)dst;
-  const vReal *s = (const vReal *)src;
+  int n = odd_even.size * Sv;
+  int i;
 
-  for ( ;i--;)
-      *d++ += a * *s++;
+#define OP(d,c,ri) dst->f.f[d][c].ri += a * src->f.f[d][c].ri;
+  for(i = 0; i < n; i++, dst++, src++) {
+     LOOP_DIRAC(LOOP_COLOR, LOOP_REIM, OP)
+  }
+#undef OP
 }
-#line 2344 "dwf.nw"
+#line 2355 "dwf.nw"
 static void
 compute_sum2x_o(vOddFermion *dst, const vOddFermion *src, double alpha)
 {
-  int i = odd_even.size * Sv * sizeof (vOddFermion) / sizeof (vReal);
   vReal a = vmk_1(alpha);
-  vReal *d = (vReal *)dst;
-  const vReal *s = (const vReal *)src;
+  int n = odd_even.size * Sv;
+  int i;
 
-  for ( ;i--; d++)
-      *d = a * *d + *s++;
+#define OP(d,c,ri) dst->f.f[d][c].ri = a * dst->f.f[d][c].ri + src->f.f[d][c].ri;
+  for (i = 0; i < n; i++, dst++, src++) {
+      LOOP_DIRAC(LOOP_COLOR, LOOP_REIM, OP)
+  }
+#undef OP
 }
-#line 2366 "dwf.nw"
+#line 2379 "dwf.nw"
 static void
 compute_sum_e(vEvenFermion *d,
               const vEvenFermion *x, double alpha, const vEvenFermion *y)
 {
-  const vReal *X = (const vReal *)x;
-  const vReal *Y = (const vReal *)y;
-  vReal *D = (vReal *)d;
+  int n = even_odd.size * Sv;
   vReal a = vmk_1(alpha);
-  int i = even_odd.size * Sv * sizeof (vEvenFermion) / sizeof (vReal);
+  int i;
 
-  for (;i--;)
-     *D++ = *X++ + a * *Y++;
+#define OP(s,c,ri) d->f.f[s][c].ri = x->f.f[s][c].ri + a * y->f.f[s][c].ri;
+  for (i = 0; i < n; i++, d++, x++, y++) {
+     LOOP_DIRAC(LOOP_COLOR, LOOP_REIM, OP)
+  }
+#undef OP
 }
-#line 2381 "dwf.nw"
+#line 2395 "dwf.nw"
 static void
 compute_sum_o(vOddFermion *d,
               const vOddFermion *x, double alpha, const vOddFermion *y)
 {
-  const vReal *X = (const vReal *)x;
-  const vReal *Y = (const vReal *)y;
-  vReal *D = (vReal *)d;
+  int n = odd_even.size * Sv;
   vReal a = vmk_1(alpha);
-  int i = odd_even.size * Sv * sizeof (vOddFermion) / sizeof (vReal);
+  int i;
 
-  for (;i--;)
-     *D++ = *X++ + a * *Y++;
+#define OP(s,c,ri) d->f.f[s][c].ri = x->f.f[s][c].ri + a * y->f.f[s][c].ri;
+  for (i = 0; i < n; i++, d++, x++, y++) {
+     LOOP_DIRAC(LOOP_COLOR, LOOP_REIM, OP)
+  }
+#undef OP
 }
-#line 2405 "dwf.nw"
+#line 2420 "dwf.nw"
 static void
 compute_sum_oN(vOddFermion *d, double *norm,
                const vOddFermion *x, double alpha, const vOddFermion *y)
@@ -1285,49 +1311,28 @@ compute_sum_oN(vOddFermion *d, double *norm,
   const vFermion *Y = &y->f;
   int n = odd_even.size * Sv;
   vReal a = vmk_1(alpha);
-  vReal q0r, q1r, q2r, q0i, q1i, q2i;
-  vReal s0r, s1r, s2r, s0i, s1i, s2i;
+#define DF(c,r) vReal q##c##r, s##c##r;
+  LOOP_COLOR(LOOP_REIM, DF)
+#undef DF
   int i;
 
   *norm = 0;
   for (i = 0; i < n; i++, X++, Y++, D++) {
-    q0r = D->f[0][0].re = X->f[0][0].re + a * Y->f[0][0].re; s0r = q0r * q0r;
-    q0i = D->f[0][0].im = X->f[0][0].im + a * Y->f[0][0].im; s0i = q0i * q0i;
-    q1r = D->f[0][1].re = X->f[0][1].re + a * Y->f[0][1].re; s1r = q1r * q1r;
-    q1i = D->f[0][1].im = X->f[0][1].im + a * Y->f[0][1].im; s1i = q1i * q1i;
-    q2r = D->f[0][2].re = X->f[0][2].re + a * Y->f[0][2].re; s2r = q2r * q2r;
-    q2i = D->f[0][2].im = X->f[0][2].im + a * Y->f[0][2].im; s2i = q2i * q2i;
-
-    q0r = D->f[1][0].re = X->f[1][0].re + a * Y->f[1][0].re; s0r += q0r * q0r;
-    q0i = D->f[1][0].im = X->f[1][0].im + a * Y->f[1][0].im; s0i += q0i * q0i;
-    q1r = D->f[1][1].re = X->f[1][1].re + a * Y->f[1][1].re; s1r += q1r * q1r;
-    q1i = D->f[1][1].im = X->f[1][1].im + a * Y->f[1][1].im; s1i += q1i * q1i;
-    q2r = D->f[1][2].re = X->f[1][2].re + a * Y->f[1][2].re; s2r += q2r * q2r;
-    q2i = D->f[1][2].im = X->f[1][2].im + a * Y->f[1][2].im; s2i += q2i * q2i;
-
-    q0r = D->f[2][0].re = X->f[2][0].re + a * Y->f[2][0].re; s0r += q0r * q0r;
-    q0i = D->f[2][0].im = X->f[2][0].im + a * Y->f[2][0].im; s0i += q0i * q0i;
-    q1r = D->f[2][1].re = X->f[2][1].re + a * Y->f[2][1].re; s1r += q1r * q1r;
-    q1i = D->f[2][1].im = X->f[2][1].im + a * Y->f[2][1].im; s1i += q1i * q1i;
-    q2r = D->f[2][2].re = X->f[2][2].re + a * Y->f[2][2].re; s2r += q2r * q2r;
-    q2i = D->f[2][2].im = X->f[2][2].im + a * Y->f[2][2].im; s2i += q2i * q2i;
-
-    q0r = D->f[3][0].re = X->f[3][0].re + a * Y->f[3][0].re; s0r += q0r * q0r;
-    q0i = D->f[3][0].im = X->f[3][0].im + a * Y->f[3][0].im; s0i += q0i * q0i;
-    q1r = D->f[3][1].re = X->f[3][1].re + a * Y->f[3][1].re; s1r += q1r * q1r;
-    q1i = D->f[3][1].im = X->f[3][1].im + a * Y->f[3][1].im; s1i += q1i * q1i;
-    q2r = D->f[3][2].re = X->f[3][2].re + a * Y->f[3][2].re; s2r += q2r * q2r;
-    q2i = D->f[3][2].im = X->f[3][2].im + a * Y->f[3][2].im; s2i += q2i * q2i;
-
-    *norm += vsum(s0r + s0i + s1r + s1i + s2r + s2i);
+#define OP(eq,d,c,r) \
+  q##c##r=D->f[d][c].r=X->f[d][c].r+a*Y->f[d][c].r; s##c##r eq q##c##r*q##c##r;
+   LOOP_COLOR(LOOP_REIM, OP, =, 0)
+   LOOP1_DIRAC(LOOP_COLOR, LOOP_REIM, OP, +=)
+#undef OP
+    *norm += vsum(s0re + s0im + s1re + s1im + s2re + s2im);
     }
   
-#line 4112 "dwf.nw"
+#line 4089 "dwf.nw"
+DEBUG_QMP("sum_double(%p): before <r|r>: %g\n", norm, *norm)
 QMP_sum_double(norm);
-DEBUG_QMP("sum_double(%p)\n", norm)
-#line 2451 "dwf.nw"
+DEBUG_QMP("after <r|r>: %g\n", *norm)
+#line 2444 "dwf.nw"
 }
-#line 2459 "dwf.nw"
+#line 2452 "dwf.nw"
 static void
 compute_sum2_oN(vOddFermion *d, double *norm,
                 double alpha, const vOddFermion *y)
@@ -1336,49 +1341,28 @@ compute_sum2_oN(vOddFermion *d, double *norm,
   const vFermion *Y = &y->f;
   int n = odd_even.size * Sv;
   vReal a = vmk_1(alpha);
-  vReal q0r, q1r, q2r, q0i, q1i, q2i;
-  vReal s0r, s1r, s2r, s0i, s1i, s2i;
+#define DF(c,r) vReal q##c##r, s##c##r;
+  LOOP_COLOR(LOOP_REIM, DF)
+#undef DF
   int i;
 
   *norm = 0;
   for (i = 0; i < n; i++, Y++, D++) {
-    q0r = D->f[0][0].re += a * Y->f[0][0].re; s0r = q0r * q0r;
-    q0i = D->f[0][0].im += a * Y->f[0][0].im; s0i = q0i * q0i;
-    q1r = D->f[0][1].re += a * Y->f[0][1].re; s1r = q1r * q1r;
-    q1i = D->f[0][1].im += a * Y->f[0][1].im; s1i = q1i * q1i;
-    q2r = D->f[0][2].re += a * Y->f[0][2].re; s2r = q2r * q2r;
-    q2i = D->f[0][2].im += a * Y->f[0][2].im; s2i = q2i * q2i;
-
-    q0r = D->f[1][0].re += a * Y->f[1][0].re; s0r += q0r * q0r;
-    q0i = D->f[1][0].im += a * Y->f[1][0].im; s0i += q0i * q0i;
-    q1r = D->f[1][1].re += a * Y->f[1][1].re; s1r += q1r * q1r;
-    q1i = D->f[1][1].im += a * Y->f[1][1].im; s1i += q1i * q1i;
-    q2r = D->f[1][2].re += a * Y->f[1][2].re; s2r += q2r * q2r;
-    q2i = D->f[1][2].im += a * Y->f[1][2].im; s2i += q2i * q2i;
-
-    q0r = D->f[2][0].re += a * Y->f[2][0].re; s0r += q0r * q0r;
-    q0i = D->f[2][0].im += a * Y->f[2][0].im; s0i += q0i * q0i;
-    q1r = D->f[2][1].re += a * Y->f[2][1].re; s1r += q1r * q1r;
-    q1i = D->f[2][1].im += a * Y->f[2][1].im; s1i += q1i * q1i;
-    q2r = D->f[2][2].re += a * Y->f[2][2].re; s2r += q2r * q2r;
-    q2i = D->f[2][2].im += a * Y->f[2][2].im; s2i += q2i * q2i;
-
-    q0r = D->f[3][0].re += a * Y->f[3][0].re; s0r += q0r * q0r;
-    q0i = D->f[3][0].im += a * Y->f[3][0].im; s0i += q0i * q0i;
-    q1r = D->f[3][1].re += a * Y->f[3][1].re; s1r += q1r * q1r;
-    q1i = D->f[3][1].im += a * Y->f[3][1].im; s1i += q1i * q1i;
-    q2r = D->f[3][2].re += a * Y->f[3][2].re; s2r += q2r * q2r;
-    q2i = D->f[3][2].im += a * Y->f[3][2].im; s2i += q2i * q2i;
-
-    *norm += vsum(s0r + s0i + s1r + s1i + s2r + s2i);
+#define OP(eq,d,c,r) \
+  q##c##r=D->f[d][c].r+=a*Y->f[d][c].r; s##c##r eq q##c##r*q##c##r;
+   LOOP_COLOR(LOOP_REIM, OP, =, 0)
+   LOOP1_DIRAC(LOOP_COLOR, LOOP_REIM, OP, +=)
+#undef OP
+    *norm += vsum(s0re + s0im + s1re + s1im + s2re + s2im);
     }
   
-#line 4112 "dwf.nw"
+#line 4089 "dwf.nw"
+DEBUG_QMP("sum_double(%p): before <r|r>: %g\n", norm, *norm)
 QMP_sum_double(norm);
-DEBUG_QMP("sum_double(%p)\n", norm)
-#line 2504 "dwf.nw"
+DEBUG_QMP("after <r|r>: %g\n", *norm)
+#line 2475 "dwf.nw"
 }
-#line 2519 "dwf.nw"
+#line 2490 "dwf.nw"
 static void
 compute_MxM(vOddFermion *eta, double *norm,
             const vOddFermion *psi)
@@ -1386,14 +1370,14 @@ compute_MxM(vOddFermion *eta, double *norm,
      compute_M(auxB_o, norm, psi);
      compute_Mx(eta, auxB_o);
 }
-#line 2530 "dwf.nw"
+#line 2501 "dwf.nw"
 static void compute_M(vOddFermion *eta, double *norm,
                       const vOddFermion *psi)
 {
    compute_Qee1Qeo(auxA_e, psi);
    compute_1Qoo1Qoe(eta, norm, psi, auxA_e);
 }
-#line 2540 "dwf.nw"
+#line 2511 "dwf.nw"
 static void compute_Mx(vOddFermion *eta,
                        const vOddFermion *psi)
 {
@@ -1401,41 +1385,41 @@ static void compute_Mx(vOddFermion *eta,
    compute_See1Seo(auxA_e, auxA_o);
    compute_1Soe(eta, psi, auxA_e);
 }
-#line 2567 "dwf.nw"
+#line 2538 "dwf.nw"
 static void
 compute_Qxx1(vFermion *chi, const vFermion *psi, int size)
 {
     const vFermion *qs, *qx5;
     
-#line 4017 "dwf.nw"
+#line 3986 "dwf.nw"
 int i, xyzt5, s, c;
 vFermion * __restrict__ rx5, * __restrict__ rs;
-#line 2572 "dwf.nw"
+#line 2543 "dwf.nw"
     
-#line 2767 "dwf.nw"
+#line 2738 "dwf.nw"
 vReal fx;
 vHalfFermion zV;
 vector_complex zn;
 scalar_complex zX[Fd/2][Nc];
-#line 2955 "dwf.nw"
+#line 2926 "dwf.nw"
 scalar_complex yOut[Fd/2][Nc];
 
-#line 2574 "dwf.nw"
+#line 2545 "dwf.nw"
     for (i = 0; i < size; i++) {
         xyzt5 = i * Sv;
         
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 2577 "dwf.nw"
+#line 2548 "dwf.nw"
 	
-#line 4045 "dwf.nw"
+#line 4014 "dwf.nw"
 qx5 = &psi[xyzt5];
-#line 2578 "dwf.nw"
+#line 2549 "dwf.nw"
         
-#line 2774 "dwf.nw"
+#line 2745 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_A;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -1443,40 +1427,40 @@ fx = vfx_A;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2777 "dwf.nw"
+#line 2748 "dwf.nw"
 for (s = 0; s < Sv_1; s++, fx = fx * vab) {
     rs = &rx5[s];
     QSETUP(s)
     
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2781 "dwf.nw"
+#line 2752 "dwf.nw"
 }
 rs = &rx5[Sv_1];
 QSETUP(Sv_1)
 fx = vput_n(fx, c0);
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2786 "dwf.nw"
+#line 2757 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
 
-#line 2789 "dwf.nw"
+#line 2760 "dwf.nw"
   zn.re = qs->f[0][c].re;               zn.im = qs->f[0][c].im;
   zn.re = vput_n(zn.re, zX[0][c].re);   zn.im = vput_n(zn.im, zX[0][c].im);
   rs->f[0][c].re = zn.re;               rs->f[0][c].im = zn.im;
@@ -1485,32 +1469,32 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_n(zn.re, zX[1][c].re);   zn.im = vput_n(zn.im, zX[1][c].im);
   rs->f[1][c].re = zn.re;               rs->f[1][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2922 "dwf.nw"
+#line 2893 "dwf.nw"
 for (s = Sv; s--;) {
     rs = &rx5[s];
     
-#line 2969 "dwf.nw"
+#line 2940 "dwf.nw"
   COMPUTE_YA(0,0,0) COMPUTE_YA(0,0,1) COMPUTE_YA(0,0,2)
-#line 2925 "dwf.nw"
+#line 2896 "dwf.nw"
     
-#line 2973 "dwf.nw"
+#line 2944 "dwf.nw"
   COMPUTE_YA(1,1,0) COMPUTE_YA(1,1,1) COMPUTE_YA(1,1,2)
-#line 2926 "dwf.nw"
+#line 2897 "dwf.nw"
 }
-#line 2881 "dwf.nw"
+#line 2852 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_B;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -1518,39 +1502,39 @@ fx = vfx_B;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2884 "dwf.nw"
+#line 2855 "dwf.nw"
 for (s = Sv; --s; fx = fx * vab) {
   rs = &rx5[s];
   QSETUP(s)
   
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2888 "dwf.nw"
+#line 2859 "dwf.nw"
 }
 rs = &rx5[0];
 QSETUP(0)
 fx = vput_0(fx, c0);
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2893 "dwf.nw"
+#line 2864 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
-#line 2895 "dwf.nw"
+#line 2866 "dwf.nw"
   
   zn.re = qs->f[2][c].re;               zn.im = qs->f[2][c].im;
   zn.re = vput_0(zn.re, zX[0][c].re);   zn.im = vput_0(zn.im, zX[0][c].im);
@@ -1560,32 +1544,32 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_0(zn.re, zX[1][c].re);   zn.im = vput_0(zn.im, zX[1][c].im);
   rs->f[3][c].re = zn.re;               rs->f[3][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2946 "dwf.nw"
+#line 2917 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     rs = &rx5[s];
     
-#line 2993 "dwf.nw"
+#line 2964 "dwf.nw"
   COMPUTE_YB(2,0,0) COMPUTE_YB(2,0,1) COMPUTE_YB(2,0,2)
-#line 2949 "dwf.nw"
+#line 2920 "dwf.nw"
     
-#line 2997 "dwf.nw"
+#line 2968 "dwf.nw"
   COMPUTE_YB(3,1,0) COMPUTE_YB(3,1,1) COMPUTE_YB(3,1,2)
-#line 2950 "dwf.nw"
+#line 2921 "dwf.nw"
 }
-#line 2579 "dwf.nw"
+#line 2550 "dwf.nw"
     }
 }
-#line 2587 "dwf.nw"
+#line 2558 "dwf.nw"
 static void
 compute_Soo1(vOddFermion *Chi, const vOddFermion *Psi)
 {
@@ -1594,35 +1578,35 @@ compute_Soo1(vOddFermion *Chi, const vOddFermion *Psi)
     int size = odd_even.size;
     const vFermion *qs, *qx5;
     
-#line 4017 "dwf.nw"
+#line 3986 "dwf.nw"
 int i, xyzt5, s, c;
 vFermion * __restrict__ rx5, * __restrict__ rs;
-#line 2595 "dwf.nw"
+#line 2566 "dwf.nw"
     
-#line 2767 "dwf.nw"
+#line 2738 "dwf.nw"
 vReal fx;
 vHalfFermion zV;
 vector_complex zn;
 scalar_complex zX[Fd/2][Nc];
-#line 2955 "dwf.nw"
+#line 2926 "dwf.nw"
 scalar_complex yOut[Fd/2][Nc];
 
-#line 2597 "dwf.nw"
+#line 2568 "dwf.nw"
     for (i = 0; i < size; i++) {
         xyzt5 = i * Sv;
         
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 2600 "dwf.nw"
+#line 2571 "dwf.nw"
 	
-#line 4045 "dwf.nw"
+#line 4014 "dwf.nw"
 qx5 = &psi[xyzt5];
-#line 2601 "dwf.nw"
+#line 2572 "dwf.nw"
         
-#line 2815 "dwf.nw"
+#line 2786 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_A;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -1630,39 +1614,39 @@ fx = vfx_A;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2818 "dwf.nw"
+#line 2789 "dwf.nw"
 for (s = 0; s < Sv_1; s++, fx = fx * vab) {
     rs = &rx5[s];
     QSETUP(s)
     
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2822 "dwf.nw"
+#line 2793 "dwf.nw"
 }
 rs = &rx5[Sv_1];
 QSETUP(Sv_1)
 fx = vput_n(fx, c0);
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2827 "dwf.nw"
+#line 2798 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
-#line 2829 "dwf.nw"
+#line 2800 "dwf.nw"
   
   zn.re = qs->f[2][c].re;               zn.im = qs->f[2][c].im;
   zn.re = vput_n(zn.re, zX[0][c].re);   zn.im = vput_n(zn.im, zX[0][c].im);
@@ -1672,32 +1656,32 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_n(zn.re, zX[1][c].re);   zn.im = vput_n(zn.im, zX[1][c].im);
   rs->f[3][c].re = zn.re;               rs->f[3][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2930 "dwf.nw"
+#line 2901 "dwf.nw"
 for (s = Sv; s--;) {
     rs = &rx5[s];
     
-#line 2977 "dwf.nw"
+#line 2948 "dwf.nw"
   COMPUTE_YA(2,0,0) COMPUTE_YA(2,0,1) COMPUTE_YA(2,0,2)
-#line 2933 "dwf.nw"
+#line 2904 "dwf.nw"
     
-#line 2981 "dwf.nw"
+#line 2952 "dwf.nw"
   COMPUTE_YA(3,1,0) COMPUTE_YA(3,1,1) COMPUTE_YA(3,1,2)
-#line 2934 "dwf.nw"
+#line 2905 "dwf.nw"
 }
-#line 2853 "dwf.nw"
+#line 2824 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_B;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -1705,40 +1689,40 @@ fx = vfx_B;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2856 "dwf.nw"
+#line 2827 "dwf.nw"
 for (s = Sv; --s; fx = fx * vab) {
     rs = &rx5[s];
     QSETUP(s)
     
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2860 "dwf.nw"
+#line 2831 "dwf.nw"
 }
 rs = &rx5[0];
 QSETUP(0)
 fx = vput_0(fx, c0);
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2865 "dwf.nw"
+#line 2836 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
 
-#line 2868 "dwf.nw"
+#line 2839 "dwf.nw"
   zn.re = qs->f[0][c].re;               zn.im = qs->f[0][c].im;
   zn.re = vput_0(zn.re, zX[0][c].re);   zn.im = vput_0(zn.im, zX[0][c].im);
   rs->f[0][c].re = zn.re;               rs->f[0][c].im = zn.im;
@@ -1747,69 +1731,69 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_0(zn.re, zX[1][c].re);   zn.im = vput_0(zn.im, zX[1][c].im);
   rs->f[1][c].re = zn.re;               rs->f[1][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2938 "dwf.nw"
+#line 2909 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     rs = &rx5[s];
     
-#line 2985 "dwf.nw"
+#line 2956 "dwf.nw"
   COMPUTE_YB(0,0,0) COMPUTE_YB(0,0,1) COMPUTE_YB(0,0,2)
-#line 2941 "dwf.nw"
+#line 2912 "dwf.nw"
     
-#line 2989 "dwf.nw"
+#line 2960 "dwf.nw"
   COMPUTE_YB(1,1,0) COMPUTE_YB(1,1,1) COMPUTE_YB(1,1,2)
-#line 2942 "dwf.nw"
+#line 2913 "dwf.nw"
 }
-#line 2602 "dwf.nw"
+#line 2573 "dwf.nw"
     }
 }
-#line 3097 "dwf.nw"
+#line 3068 "dwf.nw"
 static void
 compute_Qxy(vFermion *chi,
             const vFermion *psi,
             struct neighbor *nb)
 {
     
-#line 4017 "dwf.nw"
+#line 3986 "dwf.nw"
 int i, xyzt5, s, c;
 vFermion * __restrict__ rx5, * __restrict__ rs;
-#line 3103 "dwf.nw"
+#line 3074 "dwf.nw"
     
-#line 4022 "dwf.nw"
+#line 3991 "dwf.nw"
 int xyzt, k, d;
 const vFermion *f;
 vHalfFermion *g;
 vHalfFermion gg[2*DIM], hh[2*DIM];
 vSU3 V[2*DIM];
 int ps[2*DIM], p5[2*DIM];
-#line 4030 "dwf.nw"
+#line 3999 "dwf.nw"
 const SU3 *Uup, *Udown;
 int c1, c2;
 
-#line 3105 "dwf.nw"
+#line 3076 "dwf.nw"
     
-#line 3259 "dwf.nw"
+#line 3230 "dwf.nw"
 #define qx5 rx5
 #define qs rs
-#line 3106 "dwf.nw"
+#line 3077 "dwf.nw"
     
-#line 3326 "dwf.nw"
+#line 3297 "dwf.nw"
 {
    int k, i, s, c, *src;
    const vFermion *f;
    vHalfFermion *g;
 
    k = 0; 
-#line 3359 "dwf.nw"
+#line 3330 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -1819,13 +1803,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3363 "dwf.nw"
+#line 3334 "dwf.nw"
         }
     }
 }
-#line 3332 "dwf.nw"
+#line 3303 "dwf.nw"
    k = 1; 
-#line 3368 "dwf.nw"
+#line 3339 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -1835,13 +1819,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3372 "dwf.nw"
+#line 3343 "dwf.nw"
         }
     }
 }
-#line 3333 "dwf.nw"
+#line 3304 "dwf.nw"
    k = 2; 
-#line 3377 "dwf.nw"
+#line 3348 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -1851,13 +1835,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3381 "dwf.nw"
+#line 3352 "dwf.nw"
         }
     }
 }
-#line 3334 "dwf.nw"
+#line 3305 "dwf.nw"
    k = 3; 
-#line 3386 "dwf.nw"
+#line 3357 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -1867,13 +1851,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3390 "dwf.nw"
+#line 3361 "dwf.nw"
         }
     }
 }
-#line 3335 "dwf.nw"
+#line 3306 "dwf.nw"
    k = 4; 
-#line 3395 "dwf.nw"
+#line 3366 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -1883,13 +1867,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3399 "dwf.nw"
+#line 3370 "dwf.nw"
         }
     }
 }
-#line 3336 "dwf.nw"
+#line 3307 "dwf.nw"
    k = 5; 
-#line 3404 "dwf.nw"
+#line 3375 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
      for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -1899,13 +1883,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3408 "dwf.nw"
+#line 3379 "dwf.nw"
         }
     }
 }
-#line 3337 "dwf.nw"
+#line 3308 "dwf.nw"
    k = 6; 
-#line 3413 "dwf.nw"
+#line 3384 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -1915,13 +1899,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3417 "dwf.nw"
+#line 3388 "dwf.nw"
         }
     }
 }
-#line 3338 "dwf.nw"
+#line 3309 "dwf.nw"
    k = 7; 
-#line 3422 "dwf.nw"
+#line 3393 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -1931,34 +1915,38 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3426 "dwf.nw"
+#line 3397 "dwf.nw"
         }
     }
 }
-#line 3339 "dwf.nw"
+#line 3310 "dwf.nw"
 }
-#line 3107 "dwf.nw"
+#line 3078 "dwf.nw"
     
-#line 4079 "dwf.nw"
+#line 4048 "dwf.nw"
 if (nb->qmp_smask) {
-    QMP_start(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
+    cleanup_receivers(nb);
+    dump_buffers("start", nb);
     DEBUG_QMP("start sends and receives (0x%x)\n", (int)nb->qmp_handle)
+#endif
+    QMP_start(nb->qmp_handle);
 }
-#line 3108 "dwf.nw"
+#line 3079 "dwf.nw"
     
-#line 3433 "dwf.nw"
+#line 3404 "dwf.nw"
 for (i = 0; i < nb->inside_size; i++) {
     xyzt = nb->inside[i];
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3437 "dwf.nw"
+#line 3408 "dwf.nw"
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -1973,16 +1961,16 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3438 "dwf.nw"
+#line 3409 "dwf.nw"
     
-#line 3455 "dwf.nw"
+#line 3426 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3472 "dwf.nw"
+#line 3443 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     k=0; f=&psi[ps[0]]; g=&gg[0]; 
 #line 151 "dwf.nw"
@@ -1990,85 +1978,79 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3474 "dwf.nw"
+#line 3445 "dwf.nw"
     k=1; f=&psi[ps[1]]; g=&gg[1]; 
 #line 138 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3475 "dwf.nw"
+#line 3446 "dwf.nw"
     k=2; f=&psi[ps[2]]; g=&gg[2]; 
 #line 192 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3476 "dwf.nw"
+#line 3447 "dwf.nw"
     k=3; f=&psi[ps[3]]; g=&gg[3]; 
 #line 179 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3477 "dwf.nw"
+#line 3448 "dwf.nw"
     k=4; f=&psi[ps[4]]; g=&gg[4]; 
 #line 233 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3478 "dwf.nw"
+#line 3449 "dwf.nw"
     k=5; f=&psi[ps[5]]; g=&gg[5]; 
 #line 220 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3479 "dwf.nw"
+#line 3450 "dwf.nw"
     k=6; f=&psi[ps[6]]; g=&gg[6]; 
 #line 274 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3480 "dwf.nw"
+#line 3451 "dwf.nw"
     k=7; f=&psi[ps[7]]; g=&gg[7]; 
 #line 261 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3481 "dwf.nw"
+#line 3452 "dwf.nw"
 }
-#line 3457 "dwf.nw"
+#line 3428 "dwf.nw"
     
-#line 3528 "dwf.nw"
+#line 3499 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3504 "dwf.nw"
 }
-#line 3533 "dwf.nw"
-}
-#line 3458 "dwf.nw"
+#line 3429 "dwf.nw"
     
-#line 3514 "dwf.nw"
+#line 3485 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 7; 
@@ -2077,86 +2059,90 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3517 "dwf.nw"
+#line 3488 "dwf.nw"
     k = 6; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3518 "dwf.nw"
+#line 3489 "dwf.nw"
     k = 3; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3519 "dwf.nw"
+#line 3490 "dwf.nw"
     k = 2; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3520 "dwf.nw"
+#line 3491 "dwf.nw"
     k = 1; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3521 "dwf.nw"
+#line 3492 "dwf.nw"
     k = 0; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3522 "dwf.nw"
+#line 3493 "dwf.nw"
     k = 5; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3523 "dwf.nw"
+#line 3494 "dwf.nw"
     k = 4; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3524 "dwf.nw"
+#line 3495 "dwf.nw"
 }
-#line 3459 "dwf.nw"
+#line 3430 "dwf.nw"
 }
-#line 3439 "dwf.nw"
+#line 3410 "dwf.nw"
 }
-#line 3109 "dwf.nw"
+#line 3080 "dwf.nw"
     
-#line 4088 "dwf.nw"
+#line 4061 "dwf.nw"
 if (nb->qmp_smask) {
     QMP_wait(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
     DEBUG_QMP("waiting for sends and receives (0x%x)\n",
                (int)nb->qmp_handle)
+    dump_buffers("wait", nb);
+    cleanup_senders(nb);
+#endif
 }
-#line 3110 "dwf.nw"
+#line 3081 "dwf.nw"
     
-#line 3443 "dwf.nw"
+#line 3414 "dwf.nw"
 for (i = 0; i < nb->boundary_size; i++) {
     int m = nb->boundary[i].mask;
 
     xyzt = nb->boundary[i].index;
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3449 "dwf.nw"
+#line 3420 "dwf.nw"
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -2171,16 +2157,16 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3450 "dwf.nw"
+#line 3421 "dwf.nw"
     
-#line 3463 "dwf.nw"
+#line 3434 "dwf.nw"
 for (s = 0; s < Sv; s++) {
   
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3486 "dwf.nw"
+#line 3457 "dwf.nw"
 for (c = 0; c < 3; c++) {
     if ((m & 0x01) == 0) {
         k=0; f=&psi[ps[0]]; g=&gg[0]; 
@@ -2189,7 +2175,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3489 "dwf.nw"
+#line 3460 "dwf.nw"
     }
     if ((m & 0x02) == 0) {
         k=1; f=&psi[ps[1]]; g=&gg[1]; 
@@ -2198,7 +2184,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3492 "dwf.nw"
+#line 3463 "dwf.nw"
     }
     if ((m & 0x04) == 0) {
         k=2; f=&psi[ps[2]]; g=&gg[2]; 
@@ -2207,7 +2193,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3495 "dwf.nw"
+#line 3466 "dwf.nw"
     }
     if ((m & 0x08) == 0) {
         k=3; f=&psi[ps[3]]; g=&gg[3]; 
@@ -2216,7 +2202,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3498 "dwf.nw"
+#line 3469 "dwf.nw"
     }
     if ((m & 0x10) == 0) {
         k=4; f=&psi[ps[4]]; g=&gg[4]; 
@@ -2225,7 +2211,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3501 "dwf.nw"
+#line 3472 "dwf.nw"
     }
     if ((m & 0x20) == 0) {
         k=5; f=&psi[ps[5]]; g=&gg[5]; 
@@ -2234,7 +2220,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3504 "dwf.nw"
+#line 3475 "dwf.nw"
     }
     if ((m & 0x40) == 0) {
         k=6; f=&psi[ps[6]]; g=&gg[6]; 
@@ -2243,7 +2229,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3507 "dwf.nw"
+#line 3478 "dwf.nw"
     }
     if ((m & 0x80) == 0) {
         k=7; f=&psi[ps[7]]; g=&gg[7]; 
@@ -2252,37 +2238,31 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3510 "dwf.nw"
+#line 3481 "dwf.nw"
     }
 }
-#line 3465 "dwf.nw"
+#line 3436 "dwf.nw"
   
-#line 3537 "dwf.nw"
+#line 3508 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = (m & (1 << d))? &nb->rcv_buf[d][ps[d]]: &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3513 "dwf.nw"
 }
-#line 3542 "dwf.nw"
-}
-#line 3466 "dwf.nw"
+#line 3437 "dwf.nw"
   
-#line 3514 "dwf.nw"
+#line 3485 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 7; 
@@ -2291,69 +2271,69 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3517 "dwf.nw"
+#line 3488 "dwf.nw"
     k = 6; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3518 "dwf.nw"
+#line 3489 "dwf.nw"
     k = 3; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3519 "dwf.nw"
+#line 3490 "dwf.nw"
     k = 2; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3520 "dwf.nw"
+#line 3491 "dwf.nw"
     k = 1; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3521 "dwf.nw"
+#line 3492 "dwf.nw"
     k = 0; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3522 "dwf.nw"
+#line 3493 "dwf.nw"
     k = 5; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3523 "dwf.nw"
+#line 3494 "dwf.nw"
     k = 4; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3524 "dwf.nw"
+#line 3495 "dwf.nw"
 }
-#line 3467 "dwf.nw"
+#line 3438 "dwf.nw"
 }
-#line 3451 "dwf.nw"
+#line 3422 "dwf.nw"
 }
-#line 3111 "dwf.nw"
+#line 3082 "dwf.nw"
     
-#line 3263 "dwf.nw"
+#line 3234 "dwf.nw"
 #undef qs
 #undef qx5
-#line 3112 "dwf.nw"
+#line 3083 "dwf.nw"
 }
-#line 3119 "dwf.nw"
+#line 3090 "dwf.nw"
 static void
 compute_1Sxy(vFermion *chi,
              const vFermion *eta,
@@ -2361,37 +2341,37 @@ compute_1Sxy(vFermion *chi,
              struct neighbor *nb)
 {
     
-#line 4017 "dwf.nw"
+#line 3986 "dwf.nw"
 int i, xyzt5, s, c;
 vFermion * __restrict__ rx5, * __restrict__ rs;
-#line 3126 "dwf.nw"
+#line 3097 "dwf.nw"
     
-#line 4022 "dwf.nw"
+#line 3991 "dwf.nw"
 int xyzt, k, d;
 const vFermion *f;
 vHalfFermion *g;
 vHalfFermion gg[2*DIM], hh[2*DIM];
 vSU3 V[2*DIM];
 int ps[2*DIM], p5[2*DIM];
-#line 4030 "dwf.nw"
+#line 3999 "dwf.nw"
 const SU3 *Uup, *Udown;
 int c1, c2;
 
-#line 3128 "dwf.nw"
+#line 3099 "dwf.nw"
     
-#line 3259 "dwf.nw"
+#line 3230 "dwf.nw"
 #define qx5 rx5
 #define qs rs
-#line 3129 "dwf.nw"
+#line 3100 "dwf.nw"
     
-#line 3343 "dwf.nw"
+#line 3314 "dwf.nw"
 {
    int k, i, s, c, *src;
    const vFermion *f;
    vHalfFermion *g;
 
    k = 0; 
-#line 3368 "dwf.nw"
+#line 3339 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -2401,13 +2381,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3372 "dwf.nw"
+#line 3343 "dwf.nw"
         }
     }
 }
-#line 3349 "dwf.nw"
+#line 3320 "dwf.nw"
    k = 1; 
-#line 3359 "dwf.nw"
+#line 3330 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -2417,13 +2397,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3363 "dwf.nw"
+#line 3334 "dwf.nw"
         }
     }
 }
-#line 3350 "dwf.nw"
+#line 3321 "dwf.nw"
    k = 2; 
-#line 3386 "dwf.nw"
+#line 3357 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -2433,13 +2413,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3390 "dwf.nw"
+#line 3361 "dwf.nw"
         }
     }
 }
-#line 3351 "dwf.nw"
+#line 3322 "dwf.nw"
    k = 3; 
-#line 3377 "dwf.nw"
+#line 3348 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -2449,13 +2429,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3381 "dwf.nw"
+#line 3352 "dwf.nw"
         }
     }
 }
-#line 3352 "dwf.nw"
+#line 3323 "dwf.nw"
    k = 4; 
-#line 3404 "dwf.nw"
+#line 3375 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
      for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -2465,13 +2445,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3408 "dwf.nw"
+#line 3379 "dwf.nw"
         }
     }
 }
-#line 3353 "dwf.nw"
+#line 3324 "dwf.nw"
    k = 5; 
-#line 3395 "dwf.nw"
+#line 3366 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -2481,13 +2461,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3399 "dwf.nw"
+#line 3370 "dwf.nw"
         }
     }
 }
-#line 3354 "dwf.nw"
+#line 3325 "dwf.nw"
    k = 6; 
-#line 3422 "dwf.nw"
+#line 3393 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -2497,13 +2477,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3426 "dwf.nw"
+#line 3397 "dwf.nw"
         }
     }
 }
-#line 3355 "dwf.nw"
+#line 3326 "dwf.nw"
    k = 7; 
-#line 3413 "dwf.nw"
+#line 3384 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -2513,37 +2493,41 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3417 "dwf.nw"
+#line 3388 "dwf.nw"
         }
     }
 }
-#line 3356 "dwf.nw"
+#line 3327 "dwf.nw"
 }
-#line 3130 "dwf.nw"
+#line 3101 "dwf.nw"
     
-#line 4079 "dwf.nw"
+#line 4048 "dwf.nw"
 if (nb->qmp_smask) {
-    QMP_start(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
+    cleanup_receivers(nb);
+    dump_buffers("start", nb);
     DEBUG_QMP("start sends and receives (0x%x)\n", (int)nb->qmp_handle)
+#endif
+    QMP_start(nb->qmp_handle);
 }
-#line 3131 "dwf.nw"
+#line 3102 "dwf.nw"
     
-#line 3563 "dwf.nw"
+#line 3532 "dwf.nw"
 for (i = 0; i < nb->inside_size; i++) {
     const vFermion *ex5, *es;
 
     xyzt = nb->inside[i];
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3569 "dwf.nw"
+#line 3538 "dwf.nw"
     ex5 = &eta[xyzt5];
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -2558,16 +2542,16 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3571 "dwf.nw"
+#line 3540 "dwf.nw"
     
-#line 3590 "dwf.nw"
+#line 3559 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3607 "dwf.nw"
+#line 3576 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     k=0; f=&psi[ps[0]]; g=&gg[0]; 
 #line 138 "dwf.nw"
@@ -2575,85 +2559,79 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3609 "dwf.nw"
+#line 3578 "dwf.nw"
     k=1; f=&psi[ps[1]]; g=&gg[1]; 
 #line 151 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3610 "dwf.nw"
+#line 3579 "dwf.nw"
     k=2; f=&psi[ps[2]]; g=&gg[2]; 
 #line 179 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3611 "dwf.nw"
+#line 3580 "dwf.nw"
     k=3; f=&psi[ps[3]]; g=&gg[3]; 
 #line 192 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3612 "dwf.nw"
+#line 3581 "dwf.nw"
     k=4; f=&psi[ps[4]]; g=&gg[4]; 
 #line 220 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3613 "dwf.nw"
+#line 3582 "dwf.nw"
     k=5; f=&psi[ps[5]]; g=&gg[5]; 
 #line 233 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3614 "dwf.nw"
+#line 3583 "dwf.nw"
     k=6; f=&psi[ps[6]]; g=&gg[6]; 
 #line 261 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3615 "dwf.nw"
+#line 3584 "dwf.nw"
     k=7; f=&psi[ps[7]]; g=&gg[7]; 
 #line 274 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3616 "dwf.nw"
+#line 3585 "dwf.nw"
 }
-#line 3592 "dwf.nw"
+#line 3561 "dwf.nw"
     
-#line 3528 "dwf.nw"
+#line 3499 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3504 "dwf.nw"
 }
-#line 3533 "dwf.nw"
-}
-#line 3593 "dwf.nw"
+#line 3562 "dwf.nw"
     
-#line 3652 "dwf.nw"
+#line 3621 "dwf.nw"
 rs = &rx5[s];
 es = &ex5[s];
 for (c = 0; c < Nc; c++) {
@@ -2663,58 +2641,58 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3656 "dwf.nw"
+#line 3625 "dwf.nw"
     k = 7; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3657 "dwf.nw"
+#line 3626 "dwf.nw"
     k = 2; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3658 "dwf.nw"
+#line 3627 "dwf.nw"
     k = 3; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3659 "dwf.nw"
+#line 3628 "dwf.nw"
     k = 1; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3660 "dwf.nw"
+#line 3629 "dwf.nw"
     k = 0; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3661 "dwf.nw"
+#line 3630 "dwf.nw"
     k = 5; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3662 "dwf.nw"
+#line 3631 "dwf.nw"
     k = 4; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3663 "dwf.nw"
+#line 3632 "dwf.nw"
     
-#line 3668 "dwf.nw"
+#line 3637 "dwf.nw"
 rs->f[0][c].re = es->f[0][c].re - rs->f[0][c].re;
 rs->f[0][c].im = es->f[0][c].im - rs->f[0][c].im;
 rs->f[1][c].re = es->f[1][c].re - rs->f[1][c].re;
@@ -2723,23 +2701,27 @@ rs->f[2][c].re = es->f[2][c].re - rs->f[2][c].re;
 rs->f[2][c].im = es->f[2][c].im - rs->f[2][c].im;
 rs->f[3][c].re = es->f[3][c].re - rs->f[3][c].re;
 rs->f[3][c].im = es->f[3][c].im - rs->f[3][c].im;
-#line 3664 "dwf.nw"
+#line 3633 "dwf.nw"
 }
-#line 3594 "dwf.nw"
+#line 3563 "dwf.nw"
 }
-#line 3572 "dwf.nw"
+#line 3541 "dwf.nw"
 }
-#line 3132 "dwf.nw"
+#line 3103 "dwf.nw"
     
-#line 4088 "dwf.nw"
+#line 4061 "dwf.nw"
 if (nb->qmp_smask) {
     QMP_wait(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
     DEBUG_QMP("waiting for sends and receives (0x%x)\n",
                (int)nb->qmp_handle)
+    dump_buffers("wait", nb);
+    cleanup_senders(nb);
+#endif
 }
-#line 3133 "dwf.nw"
+#line 3104 "dwf.nw"
     
-#line 3576 "dwf.nw"
+#line 3545 "dwf.nw"
 for (i = 0; i < nb->boundary_size; i++) {
     const vFermion *ex5, *es;
     int m = nb->boundary[i].mask;
@@ -2747,15 +2729,15 @@ for (i = 0; i < nb->boundary_size; i++) {
     xyzt = nb->boundary[i].index;
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3583 "dwf.nw"
+#line 3552 "dwf.nw"
     ex5 = &eta[xyzt5];
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -2770,17 +2752,17 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3585 "dwf.nw"
+#line 3554 "dwf.nw"
     
-#line 3598 "dwf.nw"
+#line 3567 "dwf.nw"
 for (s = 0; s < Sv; s++) {
   
 
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3623 "dwf.nw"
+#line 3592 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     if ((m & 0x01) == 0) {
         k=0; f=&psi[ps[0]]; g=&gg[0]; 
@@ -2789,7 +2771,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3626 "dwf.nw"
+#line 3595 "dwf.nw"
     }
     if ((m & 0x02) == 0) {
         k=1; f=&psi[ps[1]]; g=&gg[1]; 
@@ -2798,7 +2780,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3629 "dwf.nw"
+#line 3598 "dwf.nw"
     }
     if ((m & 0x04) == 0) {
         k=2; f=&psi[ps[2]]; g=&gg[2]; 
@@ -2807,7 +2789,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3632 "dwf.nw"
+#line 3601 "dwf.nw"
     }
     if ((m & 0x08) == 0) {
         k=3; f=&psi[ps[3]]; g=&gg[3]; 
@@ -2816,7 +2798,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3635 "dwf.nw"
+#line 3604 "dwf.nw"
     }
     if ((m & 0x10) == 0) {
         k=4; f=&psi[ps[4]]; g=&gg[4]; 
@@ -2825,7 +2807,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3638 "dwf.nw"
+#line 3607 "dwf.nw"
     }
     if ((m & 0x20) == 0) {
         k=5; f=&psi[ps[5]]; g=&gg[5]; 
@@ -2834,7 +2816,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3641 "dwf.nw"
+#line 3610 "dwf.nw"
     }
     if ((m & 0x40) == 0) {
         k=6; f=&psi[ps[6]]; g=&gg[6]; 
@@ -2843,7 +2825,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3644 "dwf.nw"
+#line 3613 "dwf.nw"
     }
     if ((m & 0x80) == 0) {
         k=7; f=&psi[ps[7]]; g=&gg[7]; 
@@ -2852,37 +2834,31 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3647 "dwf.nw"
+#line 3616 "dwf.nw"
     }
 }
-#line 3600 "dwf.nw"
+#line 3569 "dwf.nw"
   
-#line 3537 "dwf.nw"
+#line 3508 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = (m & (1 << d))? &nb->rcv_buf[d][ps[d]]: &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3513 "dwf.nw"
 }
-#line 3542 "dwf.nw"
-}
-#line 3601 "dwf.nw"
+#line 3570 "dwf.nw"
   
-#line 3652 "dwf.nw"
+#line 3621 "dwf.nw"
 rs = &rx5[s];
 es = &ex5[s];
 for (c = 0; c < Nc; c++) {
@@ -2892,58 +2868,58 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3656 "dwf.nw"
+#line 3625 "dwf.nw"
     k = 7; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3657 "dwf.nw"
+#line 3626 "dwf.nw"
     k = 2; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3658 "dwf.nw"
+#line 3627 "dwf.nw"
     k = 3; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3659 "dwf.nw"
+#line 3628 "dwf.nw"
     k = 1; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3660 "dwf.nw"
+#line 3629 "dwf.nw"
     k = 0; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3661 "dwf.nw"
+#line 3630 "dwf.nw"
     k = 5; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3662 "dwf.nw"
+#line 3631 "dwf.nw"
     k = 4; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3663 "dwf.nw"
+#line 3632 "dwf.nw"
     
-#line 3668 "dwf.nw"
+#line 3637 "dwf.nw"
 rs->f[0][c].re = es->f[0][c].re - rs->f[0][c].re;
 rs->f[0][c].im = es->f[0][c].im - rs->f[0][c].im;
 rs->f[1][c].re = es->f[1][c].re - rs->f[1][c].re;
@@ -2952,66 +2928,66 @@ rs->f[2][c].re = es->f[2][c].re - rs->f[2][c].re;
 rs->f[2][c].im = es->f[2][c].im - rs->f[2][c].im;
 rs->f[3][c].re = es->f[3][c].re - rs->f[3][c].re;
 rs->f[3][c].im = es->f[3][c].im - rs->f[3][c].im;
-#line 3664 "dwf.nw"
+#line 3633 "dwf.nw"
 }
-#line 3602 "dwf.nw"
+#line 3571 "dwf.nw"
 }
-#line 3586 "dwf.nw"
+#line 3555 "dwf.nw"
 }
-#line 3134 "dwf.nw"
+#line 3105 "dwf.nw"
     
-#line 3263 "dwf.nw"
+#line 3234 "dwf.nw"
 #undef qs
 #undef qx5
-#line 3135 "dwf.nw"
+#line 3106 "dwf.nw"
 }
-#line 3140 "dwf.nw"
+#line 3111 "dwf.nw"
 static void
 compute_Qxx1Qxy(vFermion *chi,
                 const vFermion *psi,
                 struct neighbor *nb)
 {
     
-#line 4017 "dwf.nw"
+#line 3986 "dwf.nw"
 int i, xyzt5, s, c;
 vFermion * __restrict__ rx5, * __restrict__ rs;
-#line 3146 "dwf.nw"
+#line 3117 "dwf.nw"
     
-#line 4022 "dwf.nw"
+#line 3991 "dwf.nw"
 int xyzt, k, d;
 const vFermion *f;
 vHalfFermion *g;
 vHalfFermion gg[2*DIM], hh[2*DIM];
 vSU3 V[2*DIM];
 int ps[2*DIM], p5[2*DIM];
-#line 4030 "dwf.nw"
+#line 3999 "dwf.nw"
 const SU3 *Uup, *Udown;
 int c1, c2;
-#line 3147 "dwf.nw"
+#line 3118 "dwf.nw"
     
-#line 2767 "dwf.nw"
+#line 2738 "dwf.nw"
 vReal fx;
 vHalfFermion zV;
 vector_complex zn;
 scalar_complex zX[Fd/2][Nc];
-#line 2955 "dwf.nw"
+#line 2926 "dwf.nw"
 scalar_complex yOut[Fd/2][Nc];
 
-#line 3149 "dwf.nw"
+#line 3120 "dwf.nw"
     
-#line 3259 "dwf.nw"
+#line 3230 "dwf.nw"
 #define qx5 rx5
 #define qs rs
-#line 3150 "dwf.nw"
+#line 3121 "dwf.nw"
     
-#line 3326 "dwf.nw"
+#line 3297 "dwf.nw"
 {
    int k, i, s, c, *src;
    const vFermion *f;
    vHalfFermion *g;
 
    k = 0; 
-#line 3359 "dwf.nw"
+#line 3330 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3021,13 +2997,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3363 "dwf.nw"
+#line 3334 "dwf.nw"
         }
     }
 }
-#line 3332 "dwf.nw"
+#line 3303 "dwf.nw"
    k = 1; 
-#line 3368 "dwf.nw"
+#line 3339 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3037,13 +3013,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3372 "dwf.nw"
+#line 3343 "dwf.nw"
         }
     }
 }
-#line 3333 "dwf.nw"
+#line 3304 "dwf.nw"
    k = 2; 
-#line 3377 "dwf.nw"
+#line 3348 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3053,13 +3029,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3381 "dwf.nw"
+#line 3352 "dwf.nw"
         }
     }
 }
-#line 3334 "dwf.nw"
+#line 3305 "dwf.nw"
    k = 3; 
-#line 3386 "dwf.nw"
+#line 3357 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3069,13 +3045,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3390 "dwf.nw"
+#line 3361 "dwf.nw"
         }
     }
 }
-#line 3335 "dwf.nw"
+#line 3306 "dwf.nw"
    k = 4; 
-#line 3395 "dwf.nw"
+#line 3366 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3085,13 +3061,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3399 "dwf.nw"
+#line 3370 "dwf.nw"
         }
     }
 }
-#line 3336 "dwf.nw"
+#line 3307 "dwf.nw"
    k = 5; 
-#line 3404 "dwf.nw"
+#line 3375 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
      for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3101,13 +3077,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3408 "dwf.nw"
+#line 3379 "dwf.nw"
         }
     }
 }
-#line 3337 "dwf.nw"
+#line 3308 "dwf.nw"
    k = 6; 
-#line 3413 "dwf.nw"
+#line 3384 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3117,13 +3093,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3417 "dwf.nw"
+#line 3388 "dwf.nw"
         }
     }
 }
-#line 3338 "dwf.nw"
+#line 3309 "dwf.nw"
    k = 7; 
-#line 3422 "dwf.nw"
+#line 3393 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3133,34 +3109,38 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3426 "dwf.nw"
+#line 3397 "dwf.nw"
         }
     }
 }
-#line 3339 "dwf.nw"
+#line 3310 "dwf.nw"
 }
-#line 3151 "dwf.nw"
+#line 3122 "dwf.nw"
     
-#line 4079 "dwf.nw"
+#line 4048 "dwf.nw"
 if (nb->qmp_smask) {
-    QMP_start(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
+    cleanup_receivers(nb);
+    dump_buffers("start", nb);
     DEBUG_QMP("start sends and receives (0x%x)\n", (int)nb->qmp_handle)
+#endif
+    QMP_start(nb->qmp_handle);
 }
-#line 3152 "dwf.nw"
+#line 3123 "dwf.nw"
     
-#line 3680 "dwf.nw"
+#line 3649 "dwf.nw"
 for (i = 0; i < nb->inside_size; i++) {
     xyzt = nb->inside[i];
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3684 "dwf.nw"
+#line 3653 "dwf.nw"
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -3175,16 +3155,16 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3685 "dwf.nw"
+#line 3654 "dwf.nw"
     
-#line 3455 "dwf.nw"
+#line 3426 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3472 "dwf.nw"
+#line 3443 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     k=0; f=&psi[ps[0]]; g=&gg[0]; 
 #line 151 "dwf.nw"
@@ -3192,85 +3172,79 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3474 "dwf.nw"
+#line 3445 "dwf.nw"
     k=1; f=&psi[ps[1]]; g=&gg[1]; 
 #line 138 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3475 "dwf.nw"
+#line 3446 "dwf.nw"
     k=2; f=&psi[ps[2]]; g=&gg[2]; 
 #line 192 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3476 "dwf.nw"
+#line 3447 "dwf.nw"
     k=3; f=&psi[ps[3]]; g=&gg[3]; 
 #line 179 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3477 "dwf.nw"
+#line 3448 "dwf.nw"
     k=4; f=&psi[ps[4]]; g=&gg[4]; 
 #line 233 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3478 "dwf.nw"
+#line 3449 "dwf.nw"
     k=5; f=&psi[ps[5]]; g=&gg[5]; 
 #line 220 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3479 "dwf.nw"
+#line 3450 "dwf.nw"
     k=6; f=&psi[ps[6]]; g=&gg[6]; 
 #line 274 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3480 "dwf.nw"
+#line 3451 "dwf.nw"
     k=7; f=&psi[ps[7]]; g=&gg[7]; 
 #line 261 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3481 "dwf.nw"
+#line 3452 "dwf.nw"
 }
-#line 3457 "dwf.nw"
+#line 3428 "dwf.nw"
     
-#line 3528 "dwf.nw"
+#line 3499 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3504 "dwf.nw"
 }
-#line 3533 "dwf.nw"
-}
-#line 3458 "dwf.nw"
+#line 3429 "dwf.nw"
     
-#line 3514 "dwf.nw"
+#line 3485 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 7; 
@@ -3279,65 +3253,65 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3517 "dwf.nw"
+#line 3488 "dwf.nw"
     k = 6; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3518 "dwf.nw"
+#line 3489 "dwf.nw"
     k = 3; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3519 "dwf.nw"
+#line 3490 "dwf.nw"
     k = 2; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3520 "dwf.nw"
+#line 3491 "dwf.nw"
     k = 1; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3521 "dwf.nw"
+#line 3492 "dwf.nw"
     k = 0; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3522 "dwf.nw"
+#line 3493 "dwf.nw"
     k = 5; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3523 "dwf.nw"
+#line 3494 "dwf.nw"
     k = 4; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3524 "dwf.nw"
+#line 3495 "dwf.nw"
 }
-#line 3459 "dwf.nw"
+#line 3430 "dwf.nw"
 }
-#line 3686 "dwf.nw"
+#line 3655 "dwf.nw"
     
-#line 2774 "dwf.nw"
+#line 2745 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_A;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -3345,40 +3319,40 @@ fx = vfx_A;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2777 "dwf.nw"
+#line 2748 "dwf.nw"
 for (s = 0; s < Sv_1; s++, fx = fx * vab) {
     rs = &rx5[s];
     QSETUP(s)
     
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2781 "dwf.nw"
+#line 2752 "dwf.nw"
 }
 rs = &rx5[Sv_1];
 QSETUP(Sv_1)
 fx = vput_n(fx, c0);
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2786 "dwf.nw"
+#line 2757 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
 
-#line 2789 "dwf.nw"
+#line 2760 "dwf.nw"
   zn.re = qs->f[0][c].re;               zn.im = qs->f[0][c].im;
   zn.re = vput_n(zn.re, zX[0][c].re);   zn.im = vput_n(zn.im, zX[0][c].im);
   rs->f[0][c].re = zn.re;               rs->f[0][c].im = zn.im;
@@ -3387,32 +3361,32 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_n(zn.re, zX[1][c].re);   zn.im = vput_n(zn.im, zX[1][c].im);
   rs->f[1][c].re = zn.re;               rs->f[1][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2922 "dwf.nw"
+#line 2893 "dwf.nw"
 for (s = Sv; s--;) {
     rs = &rx5[s];
     
-#line 2969 "dwf.nw"
+#line 2940 "dwf.nw"
   COMPUTE_YA(0,0,0) COMPUTE_YA(0,0,1) COMPUTE_YA(0,0,2)
-#line 2925 "dwf.nw"
+#line 2896 "dwf.nw"
     
-#line 2973 "dwf.nw"
+#line 2944 "dwf.nw"
   COMPUTE_YA(1,1,0) COMPUTE_YA(1,1,1) COMPUTE_YA(1,1,2)
-#line 2926 "dwf.nw"
+#line 2897 "dwf.nw"
 }
-#line 2881 "dwf.nw"
+#line 2852 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_B;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -3420,39 +3394,39 @@ fx = vfx_B;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2884 "dwf.nw"
+#line 2855 "dwf.nw"
 for (s = Sv; --s; fx = fx * vab) {
   rs = &rx5[s];
   QSETUP(s)
   
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2888 "dwf.nw"
+#line 2859 "dwf.nw"
 }
 rs = &rx5[0];
 QSETUP(0)
 fx = vput_0(fx, c0);
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2893 "dwf.nw"
+#line 2864 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
-#line 2895 "dwf.nw"
+#line 2866 "dwf.nw"
   
   zn.re = qs->f[2][c].re;               zn.im = qs->f[2][c].im;
   zn.re = vput_0(zn.re, zX[0][c].re);   zn.im = vput_0(zn.im, zX[0][c].im);
@@ -3462,55 +3436,59 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_0(zn.re, zX[1][c].re);   zn.im = vput_0(zn.im, zX[1][c].im);
   rs->f[3][c].re = zn.re;               rs->f[3][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2946 "dwf.nw"
+#line 2917 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     rs = &rx5[s];
     
-#line 2993 "dwf.nw"
+#line 2964 "dwf.nw"
   COMPUTE_YB(2,0,0) COMPUTE_YB(2,0,1) COMPUTE_YB(2,0,2)
-#line 2949 "dwf.nw"
+#line 2920 "dwf.nw"
     
-#line 2997 "dwf.nw"
+#line 2968 "dwf.nw"
   COMPUTE_YB(3,1,0) COMPUTE_YB(3,1,1) COMPUTE_YB(3,1,2)
-#line 2950 "dwf.nw"
+#line 2921 "dwf.nw"
 }
-#line 3687 "dwf.nw"
+#line 3656 "dwf.nw"
 }
-#line 3153 "dwf.nw"
+#line 3124 "dwf.nw"
     
-#line 4088 "dwf.nw"
+#line 4061 "dwf.nw"
 if (nb->qmp_smask) {
     QMP_wait(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
     DEBUG_QMP("waiting for sends and receives (0x%x)\n",
                (int)nb->qmp_handle)
+    dump_buffers("wait", nb);
+    cleanup_senders(nb);
+#endif
 }
-#line 3154 "dwf.nw"
+#line 3125 "dwf.nw"
     
-#line 3691 "dwf.nw"
+#line 3660 "dwf.nw"
 for (i = 0; i < nb->boundary_size; i++) {
     int m = nb->boundary[i].mask;
 
     xyzt = nb->boundary[i].index;
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3697 "dwf.nw"
+#line 3666 "dwf.nw"
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -3525,16 +3503,16 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3698 "dwf.nw"
+#line 3667 "dwf.nw"
     
-#line 3463 "dwf.nw"
+#line 3434 "dwf.nw"
 for (s = 0; s < Sv; s++) {
   
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3486 "dwf.nw"
+#line 3457 "dwf.nw"
 for (c = 0; c < 3; c++) {
     if ((m & 0x01) == 0) {
         k=0; f=&psi[ps[0]]; g=&gg[0]; 
@@ -3543,7 +3521,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3489 "dwf.nw"
+#line 3460 "dwf.nw"
     }
     if ((m & 0x02) == 0) {
         k=1; f=&psi[ps[1]]; g=&gg[1]; 
@@ -3552,7 +3530,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3492 "dwf.nw"
+#line 3463 "dwf.nw"
     }
     if ((m & 0x04) == 0) {
         k=2; f=&psi[ps[2]]; g=&gg[2]; 
@@ -3561,7 +3539,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3495 "dwf.nw"
+#line 3466 "dwf.nw"
     }
     if ((m & 0x08) == 0) {
         k=3; f=&psi[ps[3]]; g=&gg[3]; 
@@ -3570,7 +3548,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3498 "dwf.nw"
+#line 3469 "dwf.nw"
     }
     if ((m & 0x10) == 0) {
         k=4; f=&psi[ps[4]]; g=&gg[4]; 
@@ -3579,7 +3557,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3501 "dwf.nw"
+#line 3472 "dwf.nw"
     }
     if ((m & 0x20) == 0) {
         k=5; f=&psi[ps[5]]; g=&gg[5]; 
@@ -3588,7 +3566,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3504 "dwf.nw"
+#line 3475 "dwf.nw"
     }
     if ((m & 0x40) == 0) {
         k=6; f=&psi[ps[6]]; g=&gg[6]; 
@@ -3597,7 +3575,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3507 "dwf.nw"
+#line 3478 "dwf.nw"
     }
     if ((m & 0x80) == 0) {
         k=7; f=&psi[ps[7]]; g=&gg[7]; 
@@ -3606,37 +3584,31 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3510 "dwf.nw"
+#line 3481 "dwf.nw"
     }
 }
-#line 3465 "dwf.nw"
+#line 3436 "dwf.nw"
   
-#line 3537 "dwf.nw"
+#line 3508 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = (m & (1 << d))? &nb->rcv_buf[d][ps[d]]: &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3513 "dwf.nw"
 }
-#line 3542 "dwf.nw"
-}
-#line 3466 "dwf.nw"
+#line 3437 "dwf.nw"
   
-#line 3514 "dwf.nw"
+#line 3485 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 7; 
@@ -3645,65 +3617,65 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3517 "dwf.nw"
+#line 3488 "dwf.nw"
     k = 6; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3518 "dwf.nw"
+#line 3489 "dwf.nw"
     k = 3; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3519 "dwf.nw"
+#line 3490 "dwf.nw"
     k = 2; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3520 "dwf.nw"
+#line 3491 "dwf.nw"
     k = 1; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3521 "dwf.nw"
+#line 3492 "dwf.nw"
     k = 0; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3522 "dwf.nw"
+#line 3493 "dwf.nw"
     k = 5; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3523 "dwf.nw"
+#line 3494 "dwf.nw"
     k = 4; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3524 "dwf.nw"
+#line 3495 "dwf.nw"
 }
-#line 3467 "dwf.nw"
+#line 3438 "dwf.nw"
 }
-#line 3699 "dwf.nw"
+#line 3668 "dwf.nw"
     
-#line 2774 "dwf.nw"
+#line 2745 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_A;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -3711,40 +3683,40 @@ fx = vfx_A;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2777 "dwf.nw"
+#line 2748 "dwf.nw"
 for (s = 0; s < Sv_1; s++, fx = fx * vab) {
     rs = &rx5[s];
     QSETUP(s)
     
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2781 "dwf.nw"
+#line 2752 "dwf.nw"
 }
 rs = &rx5[Sv_1];
 QSETUP(Sv_1)
 fx = vput_n(fx, c0);
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2786 "dwf.nw"
+#line 2757 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
 
-#line 2789 "dwf.nw"
+#line 2760 "dwf.nw"
   zn.re = qs->f[0][c].re;               zn.im = qs->f[0][c].im;
   zn.re = vput_n(zn.re, zX[0][c].re);   zn.im = vput_n(zn.im, zX[0][c].im);
   rs->f[0][c].re = zn.re;               rs->f[0][c].im = zn.im;
@@ -3753,32 +3725,32 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_n(zn.re, zX[1][c].re);   zn.im = vput_n(zn.im, zX[1][c].im);
   rs->f[1][c].re = zn.re;               rs->f[1][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2922 "dwf.nw"
+#line 2893 "dwf.nw"
 for (s = Sv; s--;) {
     rs = &rx5[s];
     
-#line 2969 "dwf.nw"
+#line 2940 "dwf.nw"
   COMPUTE_YA(0,0,0) COMPUTE_YA(0,0,1) COMPUTE_YA(0,0,2)
-#line 2925 "dwf.nw"
+#line 2896 "dwf.nw"
     
-#line 2973 "dwf.nw"
+#line 2944 "dwf.nw"
   COMPUTE_YA(1,1,0) COMPUTE_YA(1,1,1) COMPUTE_YA(1,1,2)
-#line 2926 "dwf.nw"
+#line 2897 "dwf.nw"
 }
-#line 2881 "dwf.nw"
+#line 2852 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_B;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -3786,39 +3758,39 @@ fx = vfx_B;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2884 "dwf.nw"
+#line 2855 "dwf.nw"
 for (s = Sv; --s; fx = fx * vab) {
   rs = &rx5[s];
   QSETUP(s)
   
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2888 "dwf.nw"
+#line 2859 "dwf.nw"
 }
 rs = &rx5[0];
 QSETUP(0)
 fx = vput_0(fx, c0);
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2893 "dwf.nw"
+#line 2864 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
-#line 2895 "dwf.nw"
+#line 2866 "dwf.nw"
   
   zn.re = qs->f[2][c].re;               zn.im = qs->f[2][c].im;
   zn.re = vput_0(zn.re, zX[0][c].re);   zn.im = vput_0(zn.im, zX[0][c].im);
@@ -3828,84 +3800,84 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_0(zn.re, zX[1][c].re);   zn.im = vput_0(zn.im, zX[1][c].im);
   rs->f[3][c].re = zn.re;               rs->f[3][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2946 "dwf.nw"
+#line 2917 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     rs = &rx5[s];
     
-#line 2993 "dwf.nw"
+#line 2964 "dwf.nw"
   COMPUTE_YB(2,0,0) COMPUTE_YB(2,0,1) COMPUTE_YB(2,0,2)
-#line 2949 "dwf.nw"
+#line 2920 "dwf.nw"
     
-#line 2997 "dwf.nw"
+#line 2968 "dwf.nw"
   COMPUTE_YB(3,1,0) COMPUTE_YB(3,1,1) COMPUTE_YB(3,1,2)
-#line 2950 "dwf.nw"
+#line 2921 "dwf.nw"
 }
-#line 3700 "dwf.nw"
+#line 3669 "dwf.nw"
 }
-#line 3155 "dwf.nw"
+#line 3126 "dwf.nw"
     
-#line 3263 "dwf.nw"
+#line 3234 "dwf.nw"
 #undef qs
 #undef qx5
-#line 3156 "dwf.nw"
+#line 3127 "dwf.nw"
 }
-#line 3161 "dwf.nw"
+#line 3132 "dwf.nw"
 static void
 compute_Sxx1Sxy(vFermion *chi,
                 const vFermion *psi,
                 struct neighbor *nb)
 {
     
-#line 4017 "dwf.nw"
+#line 3986 "dwf.nw"
 int i, xyzt5, s, c;
 vFermion * __restrict__ rx5, * __restrict__ rs;
-#line 3167 "dwf.nw"
+#line 3138 "dwf.nw"
     
-#line 4022 "dwf.nw"
+#line 3991 "dwf.nw"
 int xyzt, k, d;
 const vFermion *f;
 vHalfFermion *g;
 vHalfFermion gg[2*DIM], hh[2*DIM];
 vSU3 V[2*DIM];
 int ps[2*DIM], p5[2*DIM];
-#line 4030 "dwf.nw"
+#line 3999 "dwf.nw"
 const SU3 *Uup, *Udown;
 int c1, c2;
-#line 3168 "dwf.nw"
+#line 3139 "dwf.nw"
     
-#line 2767 "dwf.nw"
+#line 2738 "dwf.nw"
 vReal fx;
 vHalfFermion zV;
 vector_complex zn;
 scalar_complex zX[Fd/2][Nc];
-#line 2955 "dwf.nw"
+#line 2926 "dwf.nw"
 scalar_complex yOut[Fd/2][Nc];
 
-#line 3170 "dwf.nw"
+#line 3141 "dwf.nw"
     
-#line 3259 "dwf.nw"
+#line 3230 "dwf.nw"
 #define qx5 rx5
 #define qs rs
-#line 3171 "dwf.nw"
+#line 3142 "dwf.nw"
     
-#line 3343 "dwf.nw"
+#line 3314 "dwf.nw"
 {
    int k, i, s, c, *src;
    const vFermion *f;
    vHalfFermion *g;
 
    k = 0; 
-#line 3368 "dwf.nw"
+#line 3339 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3915,13 +3887,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3372 "dwf.nw"
+#line 3343 "dwf.nw"
         }
     }
 }
-#line 3349 "dwf.nw"
+#line 3320 "dwf.nw"
    k = 1; 
-#line 3359 "dwf.nw"
+#line 3330 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3931,13 +3903,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3363 "dwf.nw"
+#line 3334 "dwf.nw"
         }
     }
 }
-#line 3350 "dwf.nw"
+#line 3321 "dwf.nw"
    k = 2; 
-#line 3386 "dwf.nw"
+#line 3357 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3947,13 +3919,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3390 "dwf.nw"
+#line 3361 "dwf.nw"
         }
     }
 }
-#line 3351 "dwf.nw"
+#line 3322 "dwf.nw"
    k = 3; 
-#line 3377 "dwf.nw"
+#line 3348 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3963,13 +3935,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3381 "dwf.nw"
+#line 3352 "dwf.nw"
         }
     }
 }
-#line 3352 "dwf.nw"
+#line 3323 "dwf.nw"
    k = 4; 
-#line 3404 "dwf.nw"
+#line 3375 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
      for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3979,13 +3951,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3408 "dwf.nw"
+#line 3379 "dwf.nw"
         }
     }
 }
-#line 3353 "dwf.nw"
+#line 3324 "dwf.nw"
    k = 5; 
-#line 3395 "dwf.nw"
+#line 3366 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -3995,13 +3967,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3399 "dwf.nw"
+#line 3370 "dwf.nw"
         }
     }
 }
-#line 3354 "dwf.nw"
+#line 3325 "dwf.nw"
    k = 6; 
-#line 3422 "dwf.nw"
+#line 3393 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -4011,13 +3983,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3426 "dwf.nw"
+#line 3397 "dwf.nw"
         }
     }
 }
-#line 3355 "dwf.nw"
+#line 3326 "dwf.nw"
    k = 7; 
-#line 3413 "dwf.nw"
+#line 3384 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -4027,34 +3999,38 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3417 "dwf.nw"
+#line 3388 "dwf.nw"
         }
     }
 }
-#line 3356 "dwf.nw"
+#line 3327 "dwf.nw"
 }
-#line 3172 "dwf.nw"
+#line 3143 "dwf.nw"
     
-#line 4079 "dwf.nw"
+#line 4048 "dwf.nw"
 if (nb->qmp_smask) {
-    QMP_start(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
+    cleanup_receivers(nb);
+    dump_buffers("start", nb);
     DEBUG_QMP("start sends and receives (0x%x)\n", (int)nb->qmp_handle)
+#endif
+    QMP_start(nb->qmp_handle);
 }
-#line 3173 "dwf.nw"
+#line 3144 "dwf.nw"
     
-#line 3705 "dwf.nw"
+#line 3674 "dwf.nw"
 for (i = 0; i < nb->inside_size; i++) {
     xyzt = nb->inside[i];
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3709 "dwf.nw"
+#line 3678 "dwf.nw"
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -4069,16 +4045,16 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3710 "dwf.nw"
+#line 3679 "dwf.nw"
     
-#line 3729 "dwf.nw"
+#line 3698 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3607 "dwf.nw"
+#line 3576 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     k=0; f=&psi[ps[0]]; g=&gg[0]; 
 #line 138 "dwf.nw"
@@ -4086,85 +4062,79 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3609 "dwf.nw"
+#line 3578 "dwf.nw"
     k=1; f=&psi[ps[1]]; g=&gg[1]; 
 #line 151 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3610 "dwf.nw"
+#line 3579 "dwf.nw"
     k=2; f=&psi[ps[2]]; g=&gg[2]; 
 #line 179 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3611 "dwf.nw"
+#line 3580 "dwf.nw"
     k=3; f=&psi[ps[3]]; g=&gg[3]; 
 #line 192 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3612 "dwf.nw"
+#line 3581 "dwf.nw"
     k=4; f=&psi[ps[4]]; g=&gg[4]; 
 #line 220 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3613 "dwf.nw"
+#line 3582 "dwf.nw"
     k=5; f=&psi[ps[5]]; g=&gg[5]; 
 #line 233 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3614 "dwf.nw"
+#line 3583 "dwf.nw"
     k=6; f=&psi[ps[6]]; g=&gg[6]; 
 #line 261 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3615 "dwf.nw"
+#line 3584 "dwf.nw"
     k=7; f=&psi[ps[7]]; g=&gg[7]; 
 #line 274 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3616 "dwf.nw"
+#line 3585 "dwf.nw"
 }
-#line 3731 "dwf.nw"
+#line 3700 "dwf.nw"
     
-#line 3528 "dwf.nw"
+#line 3499 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3504 "dwf.nw"
 }
-#line 3533 "dwf.nw"
-}
-#line 3732 "dwf.nw"
+#line 3701 "dwf.nw"
     
-#line 3745 "dwf.nw"
+#line 3714 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 6; 
@@ -4173,65 +4143,65 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3748 "dwf.nw"
+#line 3717 "dwf.nw"
     k = 7; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3749 "dwf.nw"
+#line 3718 "dwf.nw"
     k = 2; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3750 "dwf.nw"
+#line 3719 "dwf.nw"
     k = 3; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3751 "dwf.nw"
+#line 3720 "dwf.nw"
     k = 1; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3752 "dwf.nw"
+#line 3721 "dwf.nw"
     k = 0; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3753 "dwf.nw"
+#line 3722 "dwf.nw"
     k = 5; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3754 "dwf.nw"
+#line 3723 "dwf.nw"
     k = 4; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3755 "dwf.nw"
+#line 3724 "dwf.nw"
 }
-#line 3733 "dwf.nw"
+#line 3702 "dwf.nw"
 }
-#line 3711 "dwf.nw"
+#line 3680 "dwf.nw"
     
-#line 2815 "dwf.nw"
+#line 2786 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_A;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -4239,39 +4209,39 @@ fx = vfx_A;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2818 "dwf.nw"
+#line 2789 "dwf.nw"
 for (s = 0; s < Sv_1; s++, fx = fx * vab) {
     rs = &rx5[s];
     QSETUP(s)
     
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2822 "dwf.nw"
+#line 2793 "dwf.nw"
 }
 rs = &rx5[Sv_1];
 QSETUP(Sv_1)
 fx = vput_n(fx, c0);
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2827 "dwf.nw"
+#line 2798 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
-#line 2829 "dwf.nw"
+#line 2800 "dwf.nw"
   
   zn.re = qs->f[2][c].re;               zn.im = qs->f[2][c].im;
   zn.re = vput_n(zn.re, zX[0][c].re);   zn.im = vput_n(zn.im, zX[0][c].im);
@@ -4281,32 +4251,32 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_n(zn.re, zX[1][c].re);   zn.im = vput_n(zn.im, zX[1][c].im);
   rs->f[3][c].re = zn.re;               rs->f[3][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2930 "dwf.nw"
+#line 2901 "dwf.nw"
 for (s = Sv; s--;) {
     rs = &rx5[s];
     
-#line 2977 "dwf.nw"
+#line 2948 "dwf.nw"
   COMPUTE_YA(2,0,0) COMPUTE_YA(2,0,1) COMPUTE_YA(2,0,2)
-#line 2933 "dwf.nw"
+#line 2904 "dwf.nw"
     
-#line 2981 "dwf.nw"
+#line 2952 "dwf.nw"
   COMPUTE_YA(3,1,0) COMPUTE_YA(3,1,1) COMPUTE_YA(3,1,2)
-#line 2934 "dwf.nw"
+#line 2905 "dwf.nw"
 }
-#line 2853 "dwf.nw"
+#line 2824 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_B;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -4314,40 +4284,40 @@ fx = vfx_B;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2856 "dwf.nw"
+#line 2827 "dwf.nw"
 for (s = Sv; --s; fx = fx * vab) {
     rs = &rx5[s];
     QSETUP(s)
     
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2860 "dwf.nw"
+#line 2831 "dwf.nw"
 }
 rs = &rx5[0];
 QSETUP(0)
 fx = vput_0(fx, c0);
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2865 "dwf.nw"
+#line 2836 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
 
-#line 2868 "dwf.nw"
+#line 2839 "dwf.nw"
   zn.re = qs->f[0][c].re;               zn.im = qs->f[0][c].im;
   zn.re = vput_0(zn.re, zX[0][c].re);   zn.im = vput_0(zn.im, zX[0][c].im);
   rs->f[0][c].re = zn.re;               rs->f[0][c].im = zn.im;
@@ -4356,55 +4326,59 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_0(zn.re, zX[1][c].re);   zn.im = vput_0(zn.im, zX[1][c].im);
   rs->f[1][c].re = zn.re;               rs->f[1][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2938 "dwf.nw"
+#line 2909 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     rs = &rx5[s];
     
-#line 2985 "dwf.nw"
+#line 2956 "dwf.nw"
   COMPUTE_YB(0,0,0) COMPUTE_YB(0,0,1) COMPUTE_YB(0,0,2)
-#line 2941 "dwf.nw"
+#line 2912 "dwf.nw"
     
-#line 2989 "dwf.nw"
+#line 2960 "dwf.nw"
   COMPUTE_YB(1,1,0) COMPUTE_YB(1,1,1) COMPUTE_YB(1,1,2)
-#line 2942 "dwf.nw"
+#line 2913 "dwf.nw"
 }
-#line 3712 "dwf.nw"
+#line 3681 "dwf.nw"
 }
-#line 3174 "dwf.nw"
+#line 3145 "dwf.nw"
     
-#line 4088 "dwf.nw"
+#line 4061 "dwf.nw"
 if (nb->qmp_smask) {
     QMP_wait(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
     DEBUG_QMP("waiting for sends and receives (0x%x)\n",
                (int)nb->qmp_handle)
+    dump_buffers("wait", nb);
+    cleanup_senders(nb);
+#endif
 }
-#line 3175 "dwf.nw"
+#line 3146 "dwf.nw"
     
-#line 3716 "dwf.nw"
+#line 3685 "dwf.nw"
 for (i = 0; i < nb->boundary_size; i++) {
     int m = nb->boundary[i].mask;
 
     xyzt = nb->boundary[i].index;
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3722 "dwf.nw"
+#line 3691 "dwf.nw"
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -4419,17 +4393,17 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3723 "dwf.nw"
+#line 3692 "dwf.nw"
     
-#line 3737 "dwf.nw"
+#line 3706 "dwf.nw"
 for (s = 0; s < Sv; s++) {
   
 
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3623 "dwf.nw"
+#line 3592 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     if ((m & 0x01) == 0) {
         k=0; f=&psi[ps[0]]; g=&gg[0]; 
@@ -4438,7 +4412,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3626 "dwf.nw"
+#line 3595 "dwf.nw"
     }
     if ((m & 0x02) == 0) {
         k=1; f=&psi[ps[1]]; g=&gg[1]; 
@@ -4447,7 +4421,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3629 "dwf.nw"
+#line 3598 "dwf.nw"
     }
     if ((m & 0x04) == 0) {
         k=2; f=&psi[ps[2]]; g=&gg[2]; 
@@ -4456,7 +4430,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3632 "dwf.nw"
+#line 3601 "dwf.nw"
     }
     if ((m & 0x08) == 0) {
         k=3; f=&psi[ps[3]]; g=&gg[3]; 
@@ -4465,7 +4439,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3635 "dwf.nw"
+#line 3604 "dwf.nw"
     }
     if ((m & 0x10) == 0) {
         k=4; f=&psi[ps[4]]; g=&gg[4]; 
@@ -4474,7 +4448,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3638 "dwf.nw"
+#line 3607 "dwf.nw"
     }
     if ((m & 0x20) == 0) {
         k=5; f=&psi[ps[5]]; g=&gg[5]; 
@@ -4483,7 +4457,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3641 "dwf.nw"
+#line 3610 "dwf.nw"
     }
     if ((m & 0x40) == 0) {
         k=6; f=&psi[ps[6]]; g=&gg[6]; 
@@ -4492,7 +4466,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3644 "dwf.nw"
+#line 3613 "dwf.nw"
     }
     if ((m & 0x80) == 0) {
         k=7; f=&psi[ps[7]]; g=&gg[7]; 
@@ -4501,37 +4475,31 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3647 "dwf.nw"
+#line 3616 "dwf.nw"
     }
 }
-#line 3739 "dwf.nw"
+#line 3708 "dwf.nw"
   
-#line 3537 "dwf.nw"
+#line 3508 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = (m & (1 << d))? &nb->rcv_buf[d][ps[d]]: &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3513 "dwf.nw"
 }
-#line 3542 "dwf.nw"
-}
-#line 3740 "dwf.nw"
+#line 3709 "dwf.nw"
   
-#line 3745 "dwf.nw"
+#line 3714 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 6; 
@@ -4540,65 +4508,65 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3748 "dwf.nw"
+#line 3717 "dwf.nw"
     k = 7; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3749 "dwf.nw"
+#line 3718 "dwf.nw"
     k = 2; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3750 "dwf.nw"
+#line 3719 "dwf.nw"
     k = 3; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3751 "dwf.nw"
+#line 3720 "dwf.nw"
     k = 1; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3752 "dwf.nw"
+#line 3721 "dwf.nw"
     k = 0; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3753 "dwf.nw"
+#line 3722 "dwf.nw"
     k = 5; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3754 "dwf.nw"
+#line 3723 "dwf.nw"
     k = 4; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3755 "dwf.nw"
-}
-#line 3741 "dwf.nw"
-}
 #line 3724 "dwf.nw"
+}
+#line 3710 "dwf.nw"
+}
+#line 3693 "dwf.nw"
     
-#line 2815 "dwf.nw"
+#line 2786 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_A;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -4606,39 +4574,39 @@ fx = vfx_A;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2818 "dwf.nw"
+#line 2789 "dwf.nw"
 for (s = 0; s < Sv_1; s++, fx = fx * vab) {
     rs = &rx5[s];
     QSETUP(s)
     
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2822 "dwf.nw"
+#line 2793 "dwf.nw"
 }
 rs = &rx5[Sv_1];
 QSETUP(Sv_1)
 fx = vput_n(fx, c0);
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2827 "dwf.nw"
+#line 2798 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
-#line 2829 "dwf.nw"
+#line 2800 "dwf.nw"
   
   zn.re = qs->f[2][c].re;               zn.im = qs->f[2][c].im;
   zn.re = vput_n(zn.re, zX[0][c].re);   zn.im = vput_n(zn.im, zX[0][c].im);
@@ -4648,32 +4616,32 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_n(zn.re, zX[1][c].re);   zn.im = vput_n(zn.im, zX[1][c].im);
   rs->f[3][c].re = zn.re;               rs->f[3][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2930 "dwf.nw"
+#line 2901 "dwf.nw"
 for (s = Sv; s--;) {
     rs = &rx5[s];
     
-#line 2977 "dwf.nw"
+#line 2948 "dwf.nw"
   COMPUTE_YA(2,0,0) COMPUTE_YA(2,0,1) COMPUTE_YA(2,0,2)
-#line 2933 "dwf.nw"
+#line 2904 "dwf.nw"
     
-#line 2981 "dwf.nw"
+#line 2952 "dwf.nw"
   COMPUTE_YA(3,1,0) COMPUTE_YA(3,1,1) COMPUTE_YA(3,1,2)
-#line 2934 "dwf.nw"
+#line 2905 "dwf.nw"
 }
-#line 2853 "dwf.nw"
+#line 2824 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_B;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -4681,40 +4649,40 @@ fx = vfx_B;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2856 "dwf.nw"
+#line 2827 "dwf.nw"
 for (s = Sv; --s; fx = fx * vab) {
     rs = &rx5[s];
     QSETUP(s)
     
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2860 "dwf.nw"
+#line 2831 "dwf.nw"
 }
 rs = &rx5[0];
 QSETUP(0)
 fx = vput_0(fx, c0);
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2865 "dwf.nw"
+#line 2836 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
 
-#line 2868 "dwf.nw"
+#line 2839 "dwf.nw"
   zn.re = qs->f[0][c].re;               zn.im = qs->f[0][c].im;
   zn.re = vput_0(zn.re, zX[0][c].re);   zn.im = vput_0(zn.im, zX[0][c].im);
   rs->f[0][c].re = zn.re;               rs->f[0][c].im = zn.im;
@@ -4723,38 +4691,38 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_0(zn.re, zX[1][c].re);   zn.im = vput_0(zn.im, zX[1][c].im);
   rs->f[1][c].re = zn.re;               rs->f[1][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2938 "dwf.nw"
+#line 2909 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     rs = &rx5[s];
     
-#line 2985 "dwf.nw"
+#line 2956 "dwf.nw"
   COMPUTE_YB(0,0,0) COMPUTE_YB(0,0,1) COMPUTE_YB(0,0,2)
-#line 2941 "dwf.nw"
+#line 2912 "dwf.nw"
     
-#line 2989 "dwf.nw"
+#line 2960 "dwf.nw"
   COMPUTE_YB(1,1,0) COMPUTE_YB(1,1,1) COMPUTE_YB(1,1,2)
-#line 2942 "dwf.nw"
+#line 2913 "dwf.nw"
 }
-#line 3725 "dwf.nw"
+#line 3694 "dwf.nw"
 }
-#line 3176 "dwf.nw"
+#line 3147 "dwf.nw"
     
-#line 3263 "dwf.nw"
+#line 3234 "dwf.nw"
 #undef qs
 #undef qx5
-#line 3177 "dwf.nw"
+#line 3148 "dwf.nw"
 }
-#line 3183 "dwf.nw"
+#line 3154 "dwf.nw"
 static void
 compute_1Qxx1Qxy(vFermion *chi,
                  double *norm,
@@ -4763,49 +4731,49 @@ compute_1Qxx1Qxy(vFermion *chi,
                  struct neighbor *nb)
 {
     
-#line 4017 "dwf.nw"
+#line 3986 "dwf.nw"
 int i, xyzt5, s, c;
 vFermion * __restrict__ rx5, * __restrict__ rs;
-#line 3191 "dwf.nw"
+#line 3162 "dwf.nw"
     
-#line 4022 "dwf.nw"
+#line 3991 "dwf.nw"
 int xyzt, k, d;
 const vFermion *f;
 vHalfFermion *g;
 vHalfFermion gg[2*DIM], hh[2*DIM];
 vSU3 V[2*DIM];
 int ps[2*DIM], p5[2*DIM];
-#line 4030 "dwf.nw"
+#line 3999 "dwf.nw"
 const SU3 *Uup, *Udown;
 int c1, c2;
-#line 3192 "dwf.nw"
+#line 3163 "dwf.nw"
     
-#line 2767 "dwf.nw"
+#line 2738 "dwf.nw"
 vReal fx;
 vHalfFermion zV;
 vector_complex zn;
 scalar_complex zX[Fd/2][Nc];
-#line 2955 "dwf.nw"
+#line 2926 "dwf.nw"
 scalar_complex yOut[Fd/2][Nc];
-#line 3193 "dwf.nw"
+#line 3164 "dwf.nw"
     vReal vv;
     vReal nv;
     *norm = 0;
 
     
-#line 3259 "dwf.nw"
+#line 3230 "dwf.nw"
 #define qx5 rx5
 #define qs rs
-#line 3198 "dwf.nw"
+#line 3169 "dwf.nw"
     
-#line 3326 "dwf.nw"
+#line 3297 "dwf.nw"
 {
    int k, i, s, c, *src;
    const vFermion *f;
    vHalfFermion *g;
 
    k = 0; 
-#line 3359 "dwf.nw"
+#line 3330 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -4815,13 +4783,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3363 "dwf.nw"
+#line 3334 "dwf.nw"
         }
     }
 }
-#line 3332 "dwf.nw"
+#line 3303 "dwf.nw"
    k = 1; 
-#line 3368 "dwf.nw"
+#line 3339 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -4831,13 +4799,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3372 "dwf.nw"
+#line 3343 "dwf.nw"
         }
     }
 }
-#line 3333 "dwf.nw"
+#line 3304 "dwf.nw"
    k = 2; 
-#line 3377 "dwf.nw"
+#line 3348 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -4847,13 +4815,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3381 "dwf.nw"
+#line 3352 "dwf.nw"
         }
     }
 }
-#line 3334 "dwf.nw"
+#line 3305 "dwf.nw"
    k = 3; 
-#line 3386 "dwf.nw"
+#line 3357 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -4863,13 +4831,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3390 "dwf.nw"
+#line 3361 "dwf.nw"
         }
     }
 }
-#line 3335 "dwf.nw"
+#line 3306 "dwf.nw"
    k = 4; 
-#line 3395 "dwf.nw"
+#line 3366 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -4879,13 +4847,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3399 "dwf.nw"
+#line 3370 "dwf.nw"
         }
     }
 }
-#line 3336 "dwf.nw"
+#line 3307 "dwf.nw"
    k = 5; 
-#line 3404 "dwf.nw"
+#line 3375 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
      for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -4895,13 +4863,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3408 "dwf.nw"
+#line 3379 "dwf.nw"
         }
     }
 }
-#line 3337 "dwf.nw"
+#line 3308 "dwf.nw"
    k = 6; 
-#line 3413 "dwf.nw"
+#line 3384 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -4911,13 +4879,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3417 "dwf.nw"
+#line 3388 "dwf.nw"
         }
     }
 }
-#line 3338 "dwf.nw"
+#line 3309 "dwf.nw"
    k = 7; 
-#line 3422 "dwf.nw"
+#line 3393 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -4927,37 +4895,41 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3426 "dwf.nw"
+#line 3397 "dwf.nw"
         }
     }
 }
-#line 3339 "dwf.nw"
+#line 3310 "dwf.nw"
 }
-#line 3199 "dwf.nw"
+#line 3170 "dwf.nw"
     
-#line 4079 "dwf.nw"
+#line 4048 "dwf.nw"
 if (nb->qmp_smask) {
-    QMP_start(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
+    cleanup_receivers(nb);
+    dump_buffers("start", nb);
     DEBUG_QMP("start sends and receives (0x%x)\n", (int)nb->qmp_handle)
+#endif
+    QMP_start(nb->qmp_handle);
 }
-#line 3200 "dwf.nw"
+#line 3171 "dwf.nw"
     
-#line 3760 "dwf.nw"
+#line 3729 "dwf.nw"
 for (i = 0; i < nb->inside_size; i++) {
     const vFermion *ex5, *es;
 
     xyzt = nb->inside[i];
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3766 "dwf.nw"
+#line 3735 "dwf.nw"
     ex5 = &eta[xyzt5];
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -4972,16 +4944,16 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3768 "dwf.nw"
+#line 3737 "dwf.nw"
     
-#line 3455 "dwf.nw"
+#line 3426 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3472 "dwf.nw"
+#line 3443 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     k=0; f=&psi[ps[0]]; g=&gg[0]; 
 #line 151 "dwf.nw"
@@ -4989,85 +4961,79 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3474 "dwf.nw"
+#line 3445 "dwf.nw"
     k=1; f=&psi[ps[1]]; g=&gg[1]; 
 #line 138 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3475 "dwf.nw"
+#line 3446 "dwf.nw"
     k=2; f=&psi[ps[2]]; g=&gg[2]; 
 #line 192 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3476 "dwf.nw"
+#line 3447 "dwf.nw"
     k=3; f=&psi[ps[3]]; g=&gg[3]; 
 #line 179 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3477 "dwf.nw"
+#line 3448 "dwf.nw"
     k=4; f=&psi[ps[4]]; g=&gg[4]; 
 #line 233 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3478 "dwf.nw"
+#line 3449 "dwf.nw"
     k=5; f=&psi[ps[5]]; g=&gg[5]; 
 #line 220 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3479 "dwf.nw"
+#line 3450 "dwf.nw"
     k=6; f=&psi[ps[6]]; g=&gg[6]; 
 #line 274 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3480 "dwf.nw"
+#line 3451 "dwf.nw"
     k=7; f=&psi[ps[7]]; g=&gg[7]; 
 #line 261 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3481 "dwf.nw"
+#line 3452 "dwf.nw"
 }
-#line 3457 "dwf.nw"
+#line 3428 "dwf.nw"
     
-#line 3528 "dwf.nw"
+#line 3499 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3504 "dwf.nw"
 }
-#line 3533 "dwf.nw"
-}
-#line 3458 "dwf.nw"
+#line 3429 "dwf.nw"
     
-#line 3514 "dwf.nw"
+#line 3485 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 7; 
@@ -5076,65 +5042,65 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3517 "dwf.nw"
+#line 3488 "dwf.nw"
     k = 6; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3518 "dwf.nw"
+#line 3489 "dwf.nw"
     k = 3; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3519 "dwf.nw"
+#line 3490 "dwf.nw"
     k = 2; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3520 "dwf.nw"
+#line 3491 "dwf.nw"
     k = 1; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3521 "dwf.nw"
+#line 3492 "dwf.nw"
     k = 0; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3522 "dwf.nw"
+#line 3493 "dwf.nw"
     k = 5; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3523 "dwf.nw"
+#line 3494 "dwf.nw"
     k = 4; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3524 "dwf.nw"
+#line 3495 "dwf.nw"
 }
-#line 3459 "dwf.nw"
+#line 3430 "dwf.nw"
 }
-#line 3769 "dwf.nw"
+#line 3738 "dwf.nw"
     
-#line 2774 "dwf.nw"
+#line 2745 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_A;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -5142,40 +5108,40 @@ fx = vfx_A;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2777 "dwf.nw"
+#line 2748 "dwf.nw"
 for (s = 0; s < Sv_1; s++, fx = fx * vab) {
     rs = &rx5[s];
     QSETUP(s)
     
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2781 "dwf.nw"
+#line 2752 "dwf.nw"
 }
 rs = &rx5[Sv_1];
 QSETUP(Sv_1)
 fx = vput_n(fx, c0);
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2786 "dwf.nw"
+#line 2757 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
 
-#line 2789 "dwf.nw"
+#line 2760 "dwf.nw"
   zn.re = qs->f[0][c].re;               zn.im = qs->f[0][c].im;
   zn.re = vput_n(zn.re, zX[0][c].re);   zn.im = vput_n(zn.im, zX[0][c].im);
   rs->f[0][c].re = zn.re;               rs->f[0][c].im = zn.im;
@@ -5184,32 +5150,32 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_n(zn.re, zX[1][c].re);   zn.im = vput_n(zn.im, zX[1][c].im);
   rs->f[1][c].re = zn.re;               rs->f[1][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2922 "dwf.nw"
+#line 2893 "dwf.nw"
 for (s = Sv; s--;) {
     rs = &rx5[s];
     
-#line 2969 "dwf.nw"
+#line 2940 "dwf.nw"
   COMPUTE_YA(0,0,0) COMPUTE_YA(0,0,1) COMPUTE_YA(0,0,2)
-#line 2925 "dwf.nw"
+#line 2896 "dwf.nw"
     
-#line 2973 "dwf.nw"
+#line 2944 "dwf.nw"
   COMPUTE_YA(1,1,0) COMPUTE_YA(1,1,1) COMPUTE_YA(1,1,2)
-#line 2926 "dwf.nw"
+#line 2897 "dwf.nw"
 }
-#line 2881 "dwf.nw"
+#line 2852 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_B;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -5217,39 +5183,39 @@ fx = vfx_B;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2884 "dwf.nw"
+#line 2855 "dwf.nw"
 for (s = Sv; --s; fx = fx * vab) {
   rs = &rx5[s];
   QSETUP(s)
   
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2888 "dwf.nw"
+#line 2859 "dwf.nw"
 }
 rs = &rx5[0];
 QSETUP(0)
 fx = vput_0(fx, c0);
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2893 "dwf.nw"
+#line 2864 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
-#line 2895 "dwf.nw"
+#line 2866 "dwf.nw"
   
   zn.re = qs->f[2][c].re;               zn.im = qs->f[2][c].im;
   zn.re = vput_0(zn.re, zX[0][c].re);   zn.im = vput_0(zn.im, zX[0][c].im);
@@ -5259,36 +5225,36 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_0(zn.re, zX[1][c].re);   zn.im = vput_0(zn.im, zX[1][c].im);
   rs->f[3][c].re = zn.re;               rs->f[3][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2946 "dwf.nw"
+#line 2917 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     rs = &rx5[s];
     
-#line 2993 "dwf.nw"
+#line 2964 "dwf.nw"
   COMPUTE_YB(2,0,0) COMPUTE_YB(2,0,1) COMPUTE_YB(2,0,2)
-#line 2949 "dwf.nw"
+#line 2920 "dwf.nw"
     
-#line 2997 "dwf.nw"
+#line 2968 "dwf.nw"
   COMPUTE_YB(3,1,0) COMPUTE_YB(3,1,1) COMPUTE_YB(3,1,2)
-#line 2950 "dwf.nw"
+#line 2921 "dwf.nw"
 }
-#line 3790 "dwf.nw"
+#line 3759 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     rs = &rx5[s];
     es = &ex5[s];
     nv = vmk_1(0.0);
     for (c = 0; c < Nc; c++) {
         
-#line 3802 "dwf.nw"
+#line 3771 "dwf.nw"
 vv = es->f[0][c].re - rs->f[0][c].re; rs->f[0][c].re = vv; nv += vv * vv;
 vv = es->f[0][c].im - rs->f[0][c].im; rs->f[0][c].im = vv; nv += vv * vv;
 vv = es->f[1][c].re - rs->f[1][c].re; rs->f[1][c].re = vv; nv += vv * vv;
@@ -5297,23 +5263,27 @@ vv = es->f[2][c].re - rs->f[2][c].re; rs->f[2][c].re = vv; nv += vv * vv;
 vv = es->f[2][c].im - rs->f[2][c].im; rs->f[2][c].im = vv; nv += vv * vv;
 vv = es->f[3][c].re - rs->f[3][c].re; rs->f[3][c].re = vv; nv += vv * vv;
 vv = es->f[3][c].im - rs->f[3][c].im; rs->f[3][c].im = vv; nv += vv * vv;
-#line 3796 "dwf.nw"
+#line 3765 "dwf.nw"
     }
     *norm += vsum(nv);
 }
-#line 3770 "dwf.nw"
+#line 3739 "dwf.nw"
 }
-#line 3201 "dwf.nw"
+#line 3172 "dwf.nw"
     
-#line 4088 "dwf.nw"
+#line 4061 "dwf.nw"
 if (nb->qmp_smask) {
     QMP_wait(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
     DEBUG_QMP("waiting for sends and receives (0x%x)\n",
                (int)nb->qmp_handle)
+    dump_buffers("wait", nb);
+    cleanup_senders(nb);
+#endif
 }
-#line 3202 "dwf.nw"
+#line 3173 "dwf.nw"
     
-#line 3774 "dwf.nw"
+#line 3743 "dwf.nw"
 for (i = 0; i < nb->boundary_size; i++) {
     const vFermion *ex5, *es;
     int m = nb->boundary[i].mask;
@@ -5321,15 +5291,15 @@ for (i = 0; i < nb->boundary_size; i++) {
     xyzt = nb->boundary[i].index;
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3781 "dwf.nw"
+#line 3750 "dwf.nw"
     ex5 = &eta[xyzt5];
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -5344,16 +5314,16 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3783 "dwf.nw"
+#line 3752 "dwf.nw"
     
-#line 3463 "dwf.nw"
+#line 3434 "dwf.nw"
 for (s = 0; s < Sv; s++) {
   
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3486 "dwf.nw"
+#line 3457 "dwf.nw"
 for (c = 0; c < 3; c++) {
     if ((m & 0x01) == 0) {
         k=0; f=&psi[ps[0]]; g=&gg[0]; 
@@ -5362,7 +5332,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3489 "dwf.nw"
+#line 3460 "dwf.nw"
     }
     if ((m & 0x02) == 0) {
         k=1; f=&psi[ps[1]]; g=&gg[1]; 
@@ -5371,7 +5341,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3492 "dwf.nw"
+#line 3463 "dwf.nw"
     }
     if ((m & 0x04) == 0) {
         k=2; f=&psi[ps[2]]; g=&gg[2]; 
@@ -5380,7 +5350,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3495 "dwf.nw"
+#line 3466 "dwf.nw"
     }
     if ((m & 0x08) == 0) {
         k=3; f=&psi[ps[3]]; g=&gg[3]; 
@@ -5389,7 +5359,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3498 "dwf.nw"
+#line 3469 "dwf.nw"
     }
     if ((m & 0x10) == 0) {
         k=4; f=&psi[ps[4]]; g=&gg[4]; 
@@ -5398,7 +5368,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3501 "dwf.nw"
+#line 3472 "dwf.nw"
     }
     if ((m & 0x20) == 0) {
         k=5; f=&psi[ps[5]]; g=&gg[5]; 
@@ -5407,7 +5377,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3504 "dwf.nw"
+#line 3475 "dwf.nw"
     }
     if ((m & 0x40) == 0) {
         k=6; f=&psi[ps[6]]; g=&gg[6]; 
@@ -5416,7 +5386,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3507 "dwf.nw"
+#line 3478 "dwf.nw"
     }
     if ((m & 0x80) == 0) {
         k=7; f=&psi[ps[7]]; g=&gg[7]; 
@@ -5425,37 +5395,31 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3510 "dwf.nw"
+#line 3481 "dwf.nw"
     }
 }
-#line 3465 "dwf.nw"
+#line 3436 "dwf.nw"
   
-#line 3537 "dwf.nw"
+#line 3508 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = (m & (1 << d))? &nb->rcv_buf[d][ps[d]]: &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3513 "dwf.nw"
 }
-#line 3542 "dwf.nw"
-}
-#line 3466 "dwf.nw"
+#line 3437 "dwf.nw"
   
-#line 3514 "dwf.nw"
+#line 3485 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 7; 
@@ -5464,65 +5428,65 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3517 "dwf.nw"
+#line 3488 "dwf.nw"
     k = 6; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3518 "dwf.nw"
+#line 3489 "dwf.nw"
     k = 3; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3519 "dwf.nw"
+#line 3490 "dwf.nw"
     k = 2; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3520 "dwf.nw"
+#line 3491 "dwf.nw"
     k = 1; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3521 "dwf.nw"
+#line 3492 "dwf.nw"
     k = 0; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3522 "dwf.nw"
+#line 3493 "dwf.nw"
     k = 5; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3523 "dwf.nw"
+#line 3494 "dwf.nw"
     k = 4; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3524 "dwf.nw"
+#line 3495 "dwf.nw"
 }
-#line 3467 "dwf.nw"
+#line 3438 "dwf.nw"
 }
-#line 3784 "dwf.nw"
+#line 3753 "dwf.nw"
     
-#line 2774 "dwf.nw"
+#line 2745 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_A;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -5530,40 +5494,40 @@ fx = vfx_A;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2777 "dwf.nw"
+#line 2748 "dwf.nw"
 for (s = 0; s < Sv_1; s++, fx = fx * vab) {
     rs = &rx5[s];
     QSETUP(s)
     
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2781 "dwf.nw"
+#line 2752 "dwf.nw"
 }
 rs = &rx5[Sv_1];
 QSETUP(Sv_1)
 fx = vput_n(fx, c0);
-#line 2803 "dwf.nw"
+#line 2774 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[0][c].re; Q2R(0,re)
     zV.f[0][c].im += fx * qs->f[0][c].im; Q2R(0,im)
     zV.f[1][c].re += fx * qs->f[1][c].re; Q2R(1,re)
     zV.f[1][c].im += fx * qs->f[1][c].im; Q2R(1,im)
 }
-#line 2786 "dwf.nw"
+#line 2757 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
 
-#line 2789 "dwf.nw"
+#line 2760 "dwf.nw"
   zn.re = qs->f[0][c].re;               zn.im = qs->f[0][c].im;
   zn.re = vput_n(zn.re, zX[0][c].re);   zn.im = vput_n(zn.im, zX[0][c].im);
   rs->f[0][c].re = zn.re;               rs->f[0][c].im = zn.im;
@@ -5572,32 +5536,32 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_n(zn.re, zX[1][c].re);   zn.im = vput_n(zn.im, zX[1][c].im);
   rs->f[1][c].re = zn.re;               rs->f[1][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2922 "dwf.nw"
+#line 2893 "dwf.nw"
 for (s = Sv; s--;) {
     rs = &rx5[s];
     
-#line 2969 "dwf.nw"
+#line 2940 "dwf.nw"
   COMPUTE_YA(0,0,0) COMPUTE_YA(0,0,1) COMPUTE_YA(0,0,2)
-#line 2925 "dwf.nw"
+#line 2896 "dwf.nw"
     
-#line 2973 "dwf.nw"
+#line 2944 "dwf.nw"
   COMPUTE_YA(1,1,0) COMPUTE_YA(1,1,1) COMPUTE_YA(1,1,2)
-#line 2926 "dwf.nw"
+#line 2897 "dwf.nw"
 }
-#line 2881 "dwf.nw"
+#line 2852 "dwf.nw"
 vhfzero(&zV);
 fx = vfx_B;
-#line 2753 "dwf.nw"
+#line 2724 "dwf.nw"
 #if defined(qs)
 #define QSETUP(s)
 #define Q2R(d,pt)
@@ -5605,39 +5569,39 @@ fx = vfx_B;
 #define QSETUP(s) qs = &qx5[s];
 #define Q2R(d,pt) rs->f[d][c].pt = qs->f[d][c].pt;
 #endif
-#line 2884 "dwf.nw"
+#line 2855 "dwf.nw"
 for (s = Sv; --s; fx = fx * vab) {
   rs = &rx5[s];
   QSETUP(s)
   
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2888 "dwf.nw"
+#line 2859 "dwf.nw"
 }
 rs = &rx5[0];
 QSETUP(0)
 fx = vput_0(fx, c0);
-#line 2841 "dwf.nw"
+#line 2812 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     zV.f[0][c].re += fx * qs->f[2][c].re; Q2R(2,re)
     zV.f[0][c].im += fx * qs->f[2][c].im; Q2R(2,im)
     zV.f[1][c].re += fx * qs->f[3][c].re; Q2R(3,re)
     zV.f[1][c].im += fx * qs->f[3][c].im; Q2R(3,im)
 }
-#line 2893 "dwf.nw"
+#line 2864 "dwf.nw"
 for (c = 0; c < Nc; c++) {
   
-#line 2908 "dwf.nw"
+#line 2879 "dwf.nw"
 zX[0][c].re = vsum(zV.f[0][c].re);
 zX[0][c].im = vsum(zV.f[0][c].im);
 zX[1][c].re = vsum(zV.f[1][c].re);
 zX[1][c].im = vsum(zV.f[1][c].im);
-#line 2895 "dwf.nw"
+#line 2866 "dwf.nw"
   
   zn.re = qs->f[2][c].re;               zn.im = qs->f[2][c].im;
   zn.re = vput_0(zn.re, zX[0][c].re);   zn.im = vput_0(zn.im, zX[0][c].im);
@@ -5647,36 +5611,36 @@ zX[1][c].im = vsum(zV.f[1][c].im);
   zn.re = vput_0(zn.re, zX[1][c].re);   zn.im = vput_0(zn.im, zX[1][c].im);
   rs->f[3][c].re = zn.re;               rs->f[3][c].im = zn.im;
 }
-#line 2762 "dwf.nw"
+#line 2733 "dwf.nw"
 #undef QSETUP
 #undef Q2R
-#line 2958 "dwf.nw"
+#line 2929 "dwf.nw"
 yOut[0][0].re = yOut[0][0].im = 0;
 yOut[0][1].re = yOut[0][1].im = 0;
 yOut[0][2].re = yOut[0][2].im = 0;
 yOut[1][0].re = yOut[1][0].im = 0;
 yOut[1][1].re = yOut[1][1].im = 0;
 yOut[1][2].re = yOut[1][2].im = 0;
-#line 2946 "dwf.nw"
+#line 2917 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     rs = &rx5[s];
     
-#line 2993 "dwf.nw"
+#line 2964 "dwf.nw"
   COMPUTE_YB(2,0,0) COMPUTE_YB(2,0,1) COMPUTE_YB(2,0,2)
-#line 2949 "dwf.nw"
+#line 2920 "dwf.nw"
     
-#line 2997 "dwf.nw"
+#line 2968 "dwf.nw"
   COMPUTE_YB(3,1,0) COMPUTE_YB(3,1,1) COMPUTE_YB(3,1,2)
-#line 2950 "dwf.nw"
+#line 2921 "dwf.nw"
 }
-#line 3790 "dwf.nw"
+#line 3759 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     rs = &rx5[s];
     es = &ex5[s];
     nv = vmk_1(0.0);
     for (c = 0; c < Nc; c++) {
         
-#line 3802 "dwf.nw"
+#line 3771 "dwf.nw"
 vv = es->f[0][c].re - rs->f[0][c].re; rs->f[0][c].re = vv; nv += vv * vv;
 vv = es->f[0][c].im - rs->f[0][c].im; rs->f[0][c].im = vv; nv += vv * vv;
 vv = es->f[1][c].re - rs->f[1][c].re; rs->f[1][c].re = vv; nv += vv * vv;
@@ -5685,25 +5649,26 @@ vv = es->f[2][c].re - rs->f[2][c].re; rs->f[2][c].re = vv; nv += vv * vv;
 vv = es->f[2][c].im - rs->f[2][c].im; rs->f[2][c].im = vv; nv += vv * vv;
 vv = es->f[3][c].re - rs->f[3][c].re; rs->f[3][c].re = vv; nv += vv * vv;
 vv = es->f[3][c].im - rs->f[3][c].im; rs->f[3][c].im = vv; nv += vv * vv;
-#line 3796 "dwf.nw"
+#line 3765 "dwf.nw"
     }
     *norm += vsum(nv);
 }
-#line 3785 "dwf.nw"
+#line 3754 "dwf.nw"
 }
-#line 3203 "dwf.nw"
+#line 3174 "dwf.nw"
     
-#line 4112 "dwf.nw"
+#line 4089 "dwf.nw"
+DEBUG_QMP("sum_double(%p): before <r|r>: %g\n", norm, *norm)
 QMP_sum_double(norm);
-DEBUG_QMP("sum_double(%p)\n", norm)
-#line 3204 "dwf.nw"
+DEBUG_QMP("after <r|r>: %g\n", *norm)
+#line 3175 "dwf.nw"
     
-#line 3263 "dwf.nw"
+#line 3234 "dwf.nw"
 #undef qs
 #undef qx5
-#line 3205 "dwf.nw"
+#line 3176 "dwf.nw"
 }
-#line 3210 "dwf.nw"
+#line 3181 "dwf.nw"
 static void
 compute_Dx(vFermion *chi,
            const vFermion *eta,
@@ -5711,42 +5676,42 @@ compute_Dx(vFermion *chi,
            struct neighbor *nb)
 {
     
-#line 4017 "dwf.nw"
+#line 3986 "dwf.nw"
 int i, xyzt5, s, c;
 vFermion * __restrict__ rx5, * __restrict__ rs;
-#line 3217 "dwf.nw"
+#line 3188 "dwf.nw"
     
-#line 4022 "dwf.nw"
+#line 3991 "dwf.nw"
 int xyzt, k, d;
 const vFermion *f;
 vHalfFermion *g;
 vHalfFermion gg[2*DIM], hh[2*DIM];
 vSU3 V[2*DIM];
 int ps[2*DIM], p5[2*DIM];
-#line 4030 "dwf.nw"
+#line 3999 "dwf.nw"
 const SU3 *Uup, *Udown;
 int c1, c2;
-#line 3218 "dwf.nw"
+#line 3189 "dwf.nw"
     
-#line 3952 "dwf.nw"
+#line 3921 "dwf.nw"
 const vFermion *es1;
 vReal vbc;
 
-#line 3220 "dwf.nw"
+#line 3191 "dwf.nw"
     
-#line 3259 "dwf.nw"
+#line 3230 "dwf.nw"
 #define qx5 rx5
 #define qs rs
-#line 3221 "dwf.nw"
+#line 3192 "dwf.nw"
     
-#line 3326 "dwf.nw"
+#line 3297 "dwf.nw"
 {
    int k, i, s, c, *src;
    const vFermion *f;
    vHalfFermion *g;
 
    k = 0; 
-#line 3359 "dwf.nw"
+#line 3330 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -5756,13 +5721,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3363 "dwf.nw"
+#line 3334 "dwf.nw"
         }
     }
 }
-#line 3332 "dwf.nw"
+#line 3303 "dwf.nw"
    k = 1; 
-#line 3368 "dwf.nw"
+#line 3339 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -5772,13 +5737,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3372 "dwf.nw"
+#line 3343 "dwf.nw"
         }
     }
 }
-#line 3333 "dwf.nw"
+#line 3304 "dwf.nw"
    k = 2; 
-#line 3377 "dwf.nw"
+#line 3348 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -5788,13 +5753,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3381 "dwf.nw"
+#line 3352 "dwf.nw"
         }
     }
 }
-#line 3334 "dwf.nw"
+#line 3305 "dwf.nw"
    k = 3; 
-#line 3386 "dwf.nw"
+#line 3357 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -5804,13 +5769,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3390 "dwf.nw"
+#line 3361 "dwf.nw"
         }
     }
 }
-#line 3335 "dwf.nw"
+#line 3306 "dwf.nw"
    k = 4; 
-#line 3395 "dwf.nw"
+#line 3366 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -5820,13 +5785,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3399 "dwf.nw"
+#line 3370 "dwf.nw"
         }
     }
 }
-#line 3336 "dwf.nw"
+#line 3307 "dwf.nw"
    k = 5; 
-#line 3404 "dwf.nw"
+#line 3375 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
      for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -5836,13 +5801,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3408 "dwf.nw"
+#line 3379 "dwf.nw"
         }
     }
 }
-#line 3337 "dwf.nw"
+#line 3308 "dwf.nw"
    k = 6; 
-#line 3413 "dwf.nw"
+#line 3384 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -5852,13 +5817,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3417 "dwf.nw"
+#line 3388 "dwf.nw"
         }
     }
 }
-#line 3338 "dwf.nw"
+#line 3309 "dwf.nw"
    k = 7; 
-#line 3422 "dwf.nw"
+#line 3393 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -5868,37 +5833,41 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3426 "dwf.nw"
+#line 3397 "dwf.nw"
         }
     }
 }
-#line 3339 "dwf.nw"
+#line 3310 "dwf.nw"
 }
-#line 3222 "dwf.nw"
+#line 3193 "dwf.nw"
     
-#line 4079 "dwf.nw"
+#line 4048 "dwf.nw"
 if (nb->qmp_smask) {
-    QMP_start(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
+    cleanup_receivers(nb);
+    dump_buffers("start", nb);
     DEBUG_QMP("start sends and receives (0x%x)\n", (int)nb->qmp_handle)
+#endif
+    QMP_start(nb->qmp_handle);
 }
-#line 3223 "dwf.nw"
+#line 3194 "dwf.nw"
     
-#line 3814 "dwf.nw"
+#line 3783 "dwf.nw"
 for (i = 0; i < nb->inside_size; i++) {
     const vFermion *ex5, *es;
 
     xyzt = nb->inside[i];
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3820 "dwf.nw"
+#line 3789 "dwf.nw"
     ex5 = &eta[xyzt5];
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -5913,16 +5882,16 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3822 "dwf.nw"
+#line 3791 "dwf.nw"
     
-#line 3455 "dwf.nw"
+#line 3426 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3472 "dwf.nw"
+#line 3443 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     k=0; f=&psi[ps[0]]; g=&gg[0]; 
 #line 151 "dwf.nw"
@@ -5930,85 +5899,79 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3474 "dwf.nw"
+#line 3445 "dwf.nw"
     k=1; f=&psi[ps[1]]; g=&gg[1]; 
 #line 138 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3475 "dwf.nw"
+#line 3446 "dwf.nw"
     k=2; f=&psi[ps[2]]; g=&gg[2]; 
 #line 192 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3476 "dwf.nw"
+#line 3447 "dwf.nw"
     k=3; f=&psi[ps[3]]; g=&gg[3]; 
 #line 179 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3477 "dwf.nw"
+#line 3448 "dwf.nw"
     k=4; f=&psi[ps[4]]; g=&gg[4]; 
 #line 233 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3478 "dwf.nw"
+#line 3449 "dwf.nw"
     k=5; f=&psi[ps[5]]; g=&gg[5]; 
 #line 220 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3479 "dwf.nw"
+#line 3450 "dwf.nw"
     k=6; f=&psi[ps[6]]; g=&gg[6]; 
 #line 274 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3480 "dwf.nw"
+#line 3451 "dwf.nw"
     k=7; f=&psi[ps[7]]; g=&gg[7]; 
 #line 261 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3481 "dwf.nw"
+#line 3452 "dwf.nw"
 }
-#line 3457 "dwf.nw"
+#line 3428 "dwf.nw"
     
-#line 3528 "dwf.nw"
+#line 3499 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3504 "dwf.nw"
 }
-#line 3533 "dwf.nw"
-}
-#line 3458 "dwf.nw"
+#line 3429 "dwf.nw"
     
-#line 3514 "dwf.nw"
+#line 3485 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 7; 
@@ -6017,62 +5980,62 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3517 "dwf.nw"
+#line 3488 "dwf.nw"
     k = 6; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3518 "dwf.nw"
+#line 3489 "dwf.nw"
     k = 3; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3519 "dwf.nw"
+#line 3490 "dwf.nw"
     k = 2; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3520 "dwf.nw"
+#line 3491 "dwf.nw"
     k = 1; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3521 "dwf.nw"
+#line 3492 "dwf.nw"
     k = 0; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3522 "dwf.nw"
+#line 3493 "dwf.nw"
     k = 5; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3523 "dwf.nw"
+#line 3494 "dwf.nw"
     k = 4; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3524 "dwf.nw"
+#line 3495 "dwf.nw"
 }
-#line 3459 "dwf.nw"
+#line 3430 "dwf.nw"
 }
-#line 3823 "dwf.nw"
+#line 3792 "dwf.nw"
     
-#line 3883 "dwf.nw"
+#line 3852 "dwf.nw"
 for (s = Sv, vbc = vbnc, es1 = &ex5[0]; s--; vbc = vb) {
     es = &ex5[s];
     rs = &rx5[s];
@@ -6088,7 +6051,7 @@ for (s = Sv, vbc = vbnc, es1 = &ex5[0]; s--; vbc = vb) {
 #undef QXX
     es1 = es;
 }
-#line 3934 "dwf.nw"
+#line 3903 "dwf.nw"
 for (s = 0, vbc = vcbn, es1 = &ex5[Sv_1]; s < Sv; s++, vbc = vb) {
     es = &ex5[s];
     rs = &rx5[s];
@@ -6104,19 +6067,23 @@ for (s = 0, vbc = vcbn, es1 = &ex5[Sv_1]; s < Sv; s++, vbc = vb) {
 #undef QXX
     es1 = es;
 }
-#line 3824 "dwf.nw"
+#line 3793 "dwf.nw"
 }
-#line 3224 "dwf.nw"
+#line 3195 "dwf.nw"
     
-#line 4088 "dwf.nw"
+#line 4061 "dwf.nw"
 if (nb->qmp_smask) {
     QMP_wait(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
     DEBUG_QMP("waiting for sends and receives (0x%x)\n",
                (int)nb->qmp_handle)
+    dump_buffers("wait", nb);
+    cleanup_senders(nb);
+#endif
 }
-#line 3225 "dwf.nw"
+#line 3196 "dwf.nw"
     
-#line 3828 "dwf.nw"
+#line 3797 "dwf.nw"
 for (i = 0; i < nb->boundary_size; i++) {
     const vFermion *ex5, *es;
     int m = nb->boundary[i].mask;
@@ -6124,15 +6091,15 @@ for (i = 0; i < nb->boundary_size; i++) {
     xyzt = nb->boundary[i].index;
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3835 "dwf.nw"
+#line 3804 "dwf.nw"
     ex5 = &eta[xyzt5];
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -6147,16 +6114,16 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3837 "dwf.nw"
+#line 3806 "dwf.nw"
     
-#line 3463 "dwf.nw"
+#line 3434 "dwf.nw"
 for (s = 0; s < Sv; s++) {
   
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3486 "dwf.nw"
+#line 3457 "dwf.nw"
 for (c = 0; c < 3; c++) {
     if ((m & 0x01) == 0) {
         k=0; f=&psi[ps[0]]; g=&gg[0]; 
@@ -6165,7 +6132,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3489 "dwf.nw"
+#line 3460 "dwf.nw"
     }
     if ((m & 0x02) == 0) {
         k=1; f=&psi[ps[1]]; g=&gg[1]; 
@@ -6174,7 +6141,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3492 "dwf.nw"
+#line 3463 "dwf.nw"
     }
     if ((m & 0x04) == 0) {
         k=2; f=&psi[ps[2]]; g=&gg[2]; 
@@ -6183,7 +6150,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3495 "dwf.nw"
+#line 3466 "dwf.nw"
     }
     if ((m & 0x08) == 0) {
         k=3; f=&psi[ps[3]]; g=&gg[3]; 
@@ -6192,7 +6159,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3498 "dwf.nw"
+#line 3469 "dwf.nw"
     }
     if ((m & 0x10) == 0) {
         k=4; f=&psi[ps[4]]; g=&gg[4]; 
@@ -6201,7 +6168,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3501 "dwf.nw"
+#line 3472 "dwf.nw"
     }
     if ((m & 0x20) == 0) {
         k=5; f=&psi[ps[5]]; g=&gg[5]; 
@@ -6210,7 +6177,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3504 "dwf.nw"
+#line 3475 "dwf.nw"
     }
     if ((m & 0x40) == 0) {
         k=6; f=&psi[ps[6]]; g=&gg[6]; 
@@ -6219,7 +6186,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3507 "dwf.nw"
+#line 3478 "dwf.nw"
     }
     if ((m & 0x80) == 0) {
         k=7; f=&psi[ps[7]]; g=&gg[7]; 
@@ -6228,37 +6195,31 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3510 "dwf.nw"
+#line 3481 "dwf.nw"
     }
 }
-#line 3465 "dwf.nw"
+#line 3436 "dwf.nw"
   
-#line 3537 "dwf.nw"
+#line 3508 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = (m & (1 << d))? &nb->rcv_buf[d][ps[d]]: &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3513 "dwf.nw"
 }
-#line 3542 "dwf.nw"
-}
-#line 3466 "dwf.nw"
+#line 3437 "dwf.nw"
   
-#line 3514 "dwf.nw"
+#line 3485 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 7; 
@@ -6267,62 +6228,62 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3517 "dwf.nw"
+#line 3488 "dwf.nw"
     k = 6; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3518 "dwf.nw"
+#line 3489 "dwf.nw"
     k = 3; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3519 "dwf.nw"
+#line 3490 "dwf.nw"
     k = 2; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3520 "dwf.nw"
+#line 3491 "dwf.nw"
     k = 1; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3521 "dwf.nw"
+#line 3492 "dwf.nw"
     k = 0; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3522 "dwf.nw"
+#line 3493 "dwf.nw"
     k = 5; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3523 "dwf.nw"
+#line 3494 "dwf.nw"
     k = 4; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3524 "dwf.nw"
+#line 3495 "dwf.nw"
 }
-#line 3467 "dwf.nw"
+#line 3438 "dwf.nw"
 }
-#line 3838 "dwf.nw"
+#line 3807 "dwf.nw"
     
-#line 3883 "dwf.nw"
+#line 3852 "dwf.nw"
 for (s = Sv, vbc = vbnc, es1 = &ex5[0]; s--; vbc = vb) {
     es = &ex5[s];
     rs = &rx5[s];
@@ -6338,7 +6299,7 @@ for (s = Sv, vbc = vbnc, es1 = &ex5[0]; s--; vbc = vb) {
 #undef QXX
     es1 = es;
 }
-#line 3934 "dwf.nw"
+#line 3903 "dwf.nw"
 for (s = 0, vbc = vcbn, es1 = &ex5[Sv_1]; s < Sv; s++, vbc = vb) {
     es = &ex5[s];
     rs = &rx5[s];
@@ -6354,16 +6315,16 @@ for (s = 0, vbc = vcbn, es1 = &ex5[Sv_1]; s < Sv; s++, vbc = vb) {
 #undef QXX
     es1 = es;
 }
-#line 3839 "dwf.nw"
+#line 3808 "dwf.nw"
 }
-#line 3226 "dwf.nw"
+#line 3197 "dwf.nw"
     
-#line 3263 "dwf.nw"
+#line 3234 "dwf.nw"
 #undef qs
 #undef qx5
-#line 3227 "dwf.nw"
+#line 3198 "dwf.nw"
 }
-#line 3233 "dwf.nw"
+#line 3204 "dwf.nw"
 static void
 compute_Dcx(vFermion *chi,
             const vFermion *eta,
@@ -6371,42 +6332,42 @@ compute_Dcx(vFermion *chi,
             struct neighbor *nb)
 {
     
-#line 4017 "dwf.nw"
+#line 3986 "dwf.nw"
 int i, xyzt5, s, c;
 vFermion * __restrict__ rx5, * __restrict__ rs;
-#line 3240 "dwf.nw"
+#line 3211 "dwf.nw"
     
-#line 4022 "dwf.nw"
+#line 3991 "dwf.nw"
 int xyzt, k, d;
 const vFermion *f;
 vHalfFermion *g;
 vHalfFermion gg[2*DIM], hh[2*DIM];
 vSU3 V[2*DIM];
 int ps[2*DIM], p5[2*DIM];
-#line 4030 "dwf.nw"
+#line 3999 "dwf.nw"
 const SU3 *Uup, *Udown;
 int c1, c2;
-#line 3241 "dwf.nw"
+#line 3212 "dwf.nw"
     
-#line 3952 "dwf.nw"
+#line 3921 "dwf.nw"
 const vFermion *es1;
 vReal vbc;
 
-#line 3243 "dwf.nw"
+#line 3214 "dwf.nw"
     
-#line 3259 "dwf.nw"
+#line 3230 "dwf.nw"
 #define qx5 rx5
 #define qs rs
-#line 3244 "dwf.nw"
+#line 3215 "dwf.nw"
     
-#line 3343 "dwf.nw"
+#line 3314 "dwf.nw"
 {
    int k, i, s, c, *src;
    const vFermion *f;
    vHalfFermion *g;
 
    k = 0; 
-#line 3368 "dwf.nw"
+#line 3339 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -6416,13 +6377,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3372 "dwf.nw"
+#line 3343 "dwf.nw"
         }
     }
 }
-#line 3349 "dwf.nw"
+#line 3320 "dwf.nw"
    k = 1; 
-#line 3359 "dwf.nw"
+#line 3330 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -6432,13 +6393,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3363 "dwf.nw"
+#line 3334 "dwf.nw"
         }
     }
 }
-#line 3350 "dwf.nw"
+#line 3321 "dwf.nw"
    k = 2; 
-#line 3386 "dwf.nw"
+#line 3357 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -6448,13 +6409,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3390 "dwf.nw"
+#line 3361 "dwf.nw"
         }
     }
 }
-#line 3351 "dwf.nw"
+#line 3322 "dwf.nw"
    k = 3; 
-#line 3377 "dwf.nw"
+#line 3348 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -6464,13 +6425,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3381 "dwf.nw"
+#line 3352 "dwf.nw"
         }
     }
 }
-#line 3352 "dwf.nw"
+#line 3323 "dwf.nw"
    k = 4; 
-#line 3404 "dwf.nw"
+#line 3375 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
      for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -6480,13 +6441,13 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3408 "dwf.nw"
+#line 3379 "dwf.nw"
         }
     }
 }
-#line 3353 "dwf.nw"
+#line 3324 "dwf.nw"
    k = 5; 
-#line 3395 "dwf.nw"
+#line 3366 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -6496,13 +6457,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3399 "dwf.nw"
+#line 3370 "dwf.nw"
         }
     }
 }
-#line 3354 "dwf.nw"
+#line 3325 "dwf.nw"
    k = 6; 
-#line 3422 "dwf.nw"
+#line 3393 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -6512,13 +6473,13 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3426 "dwf.nw"
+#line 3397 "dwf.nw"
         }
     }
 }
-#line 3355 "dwf.nw"
+#line 3326 "dwf.nw"
    k = 7; 
-#line 3413 "dwf.nw"
+#line 3384 "dwf.nw"
 for (i = nb->snd_size[k], g = nb->snd_buf[k], src = nb->snd[k]; i--; src++) {
     for (s = Sv, f = &psi[*src]; s--; g++, f++) {
         for (c = 0; c < Nc; c++) {
@@ -6528,37 +6489,41 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3417 "dwf.nw"
+#line 3388 "dwf.nw"
         }
     }
 }
-#line 3356 "dwf.nw"
+#line 3327 "dwf.nw"
 }
-#line 3245 "dwf.nw"
+#line 3216 "dwf.nw"
     
-#line 4079 "dwf.nw"
+#line 4048 "dwf.nw"
 if (nb->qmp_smask) {
-    QMP_start(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
+    cleanup_receivers(nb);
+    dump_buffers("start", nb);
     DEBUG_QMP("start sends and receives (0x%x)\n", (int)nb->qmp_handle)
+#endif
+    QMP_start(nb->qmp_handle);
 }
-#line 3246 "dwf.nw"
+#line 3217 "dwf.nw"
     
-#line 3848 "dwf.nw"
+#line 3817 "dwf.nw"
 for (i = 0; i < nb->inside_size; i++) {
     const vFermion *ex5, *es;
 
     xyzt = nb->inside[i];
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3854 "dwf.nw"
+#line 3823 "dwf.nw"
     ex5 = &eta[xyzt5];
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -6573,16 +6538,16 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3856 "dwf.nw"
+#line 3825 "dwf.nw"
     
-#line 3729 "dwf.nw"
+#line 3698 "dwf.nw"
 for (s = 0; s < Sv; s++) {
     
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3607 "dwf.nw"
+#line 3576 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     k=0; f=&psi[ps[0]]; g=&gg[0]; 
 #line 138 "dwf.nw"
@@ -6590,85 +6555,79 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3609 "dwf.nw"
+#line 3578 "dwf.nw"
     k=1; f=&psi[ps[1]]; g=&gg[1]; 
 #line 151 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3610 "dwf.nw"
+#line 3579 "dwf.nw"
     k=2; f=&psi[ps[2]]; g=&gg[2]; 
 #line 179 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3611 "dwf.nw"
+#line 3580 "dwf.nw"
     k=3; f=&psi[ps[3]]; g=&gg[3]; 
 #line 192 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3612 "dwf.nw"
+#line 3581 "dwf.nw"
     k=4; f=&psi[ps[4]]; g=&gg[4]; 
 #line 220 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3613 "dwf.nw"
+#line 3582 "dwf.nw"
     k=5; f=&psi[ps[5]]; g=&gg[5]; 
 #line 233 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3614 "dwf.nw"
+#line 3583 "dwf.nw"
     k=6; f=&psi[ps[6]]; g=&gg[6]; 
 #line 261 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3615 "dwf.nw"
+#line 3584 "dwf.nw"
     k=7; f=&psi[ps[7]]; g=&gg[7]; 
 #line 274 "dwf.nw"
 g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3616 "dwf.nw"
+#line 3585 "dwf.nw"
 }
-#line 3731 "dwf.nw"
+#line 3700 "dwf.nw"
     
-#line 3528 "dwf.nw"
+#line 3499 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3504 "dwf.nw"
 }
-#line 3533 "dwf.nw"
-}
-#line 3732 "dwf.nw"
+#line 3701 "dwf.nw"
     
-#line 3745 "dwf.nw"
+#line 3714 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 6; 
@@ -6677,62 +6636,62 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3748 "dwf.nw"
+#line 3717 "dwf.nw"
     k = 7; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3749 "dwf.nw"
+#line 3718 "dwf.nw"
     k = 2; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3750 "dwf.nw"
+#line 3719 "dwf.nw"
     k = 3; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3751 "dwf.nw"
+#line 3720 "dwf.nw"
     k = 1; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3752 "dwf.nw"
+#line 3721 "dwf.nw"
     k = 0; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3753 "dwf.nw"
+#line 3722 "dwf.nw"
     k = 5; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3754 "dwf.nw"
+#line 3723 "dwf.nw"
     k = 4; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3755 "dwf.nw"
+#line 3724 "dwf.nw"
 }
-#line 3733 "dwf.nw"
+#line 3702 "dwf.nw"
 }
-#line 3857 "dwf.nw"
+#line 3826 "dwf.nw"
     
-#line 3917 "dwf.nw"
+#line 3886 "dwf.nw"
 for (s = 0, vbc = vcbn, es1 = &ex5[Sv_1]; s < Sv; s++, vbc = vb) {
     es = &ex5[s];
     rs = &rx5[s];
@@ -6748,7 +6707,7 @@ for (s = 0, vbc = vcbn, es1 = &ex5[Sv_1]; s < Sv; s++, vbc = vb) {
 #undef QXX
     es1 = es;
 }
-#line 3900 "dwf.nw"
+#line 3869 "dwf.nw"
 for (s = Sv, vbc = vbnc, es1 = &ex5[0]; s--; vbc = vb) {
     es = &ex5[s];
     rs = &rx5[s];
@@ -6764,19 +6723,23 @@ for (s = Sv, vbc = vbnc, es1 = &ex5[0]; s--; vbc = vb) {
 #undef QXX
     es1 = es;
 }
-#line 3858 "dwf.nw"
+#line 3827 "dwf.nw"
 }
-#line 3247 "dwf.nw"
+#line 3218 "dwf.nw"
     
-#line 4088 "dwf.nw"
+#line 4061 "dwf.nw"
 if (nb->qmp_smask) {
     QMP_wait(nb->qmp_handle);
+#ifndef NO_DEBUG_QMP
     DEBUG_QMP("waiting for sends and receives (0x%x)\n",
                (int)nb->qmp_handle)
+    dump_buffers("wait", nb);
+    cleanup_senders(nb);
+#endif
 }
-#line 3248 "dwf.nw"
+#line 3219 "dwf.nw"
     
-#line 3862 "dwf.nw"
+#line 3831 "dwf.nw"
 for (i = 0; i < nb->boundary_size; i++) {
     const vFermion *ex5, *es;
     int m = nb->boundary[i].mask;
@@ -6784,15 +6747,15 @@ for (i = 0; i < nb->boundary_size; i++) {
     xyzt = nb->boundary[i].index;
     xyzt5 = xyzt * Sv;
     
-#line 4037 "dwf.nw"
+#line 4006 "dwf.nw"
 for (d = 0; d < 2*DIM; d++)
     p5[d] = nb->site[xyzt].F[d];
-#line 4042 "dwf.nw"
+#line 4011 "dwf.nw"
 rx5 = &chi[xyzt5];
-#line 3869 "dwf.nw"
+#line 3838 "dwf.nw"
     ex5 = &eta[xyzt5];
     
-#line 3960 "dwf.nw"
+#line 3929 "dwf.nw"
 Uup = &U[nb->site[xyzt].Uup];
 for (d = 0; d < DIM; d++, Uup++) {
     Udown = &U[nb->site[xyzt].Udown[d]];
@@ -6807,17 +6770,17 @@ for (d = 0; d < DIM; d++, Uup++) {
         }
     }
 }
-#line 3871 "dwf.nw"
+#line 3840 "dwf.nw"
     
-#line 3737 "dwf.nw"
+#line 3706 "dwf.nw"
 for (s = 0; s < Sv; s++) {
   
 
-#line 3977 "dwf.nw"
+#line 3946 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
   ps[d] = p5[d] + s;
 }
-#line 3623 "dwf.nw"
+#line 3592 "dwf.nw"
 for (c = 0; c < Nc; c++) {
     if ((m & 0x01) == 0) {
         k=0; f=&psi[ps[0]]; g=&gg[0]; 
@@ -6826,7 +6789,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].re;
-#line 3626 "dwf.nw"
+#line 3595 "dwf.nw"
     }
     if ((m & 0x02) == 0) {
         k=1; f=&psi[ps[1]]; g=&gg[1]; 
@@ -6835,7 +6798,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].re;
-#line 3629 "dwf.nw"
+#line 3598 "dwf.nw"
     }
     if ((m & 0x04) == 0) {
         k=2; f=&psi[ps[2]]; g=&gg[2]; 
@@ -6844,7 +6807,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[2][c].im;
-#line 3632 "dwf.nw"
+#line 3601 "dwf.nw"
     }
     if ((m & 0x08) == 0) {
         k=3; f=&psi[ps[3]]; g=&gg[3]; 
@@ -6853,7 +6816,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[3][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[3][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[2][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[2][c].im;
-#line 3635 "dwf.nw"
+#line 3604 "dwf.nw"
     }
     if ((m & 0x10) == 0) {
         k=4; f=&psi[ps[4]]; g=&gg[4]; 
@@ -6862,7 +6825,7 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].re;
-#line 3638 "dwf.nw"
+#line 3607 "dwf.nw"
     }
     if ((m & 0x20) == 0) {
         k=5; f=&psi[ps[5]]; g=&gg[5]; 
@@ -6871,7 +6834,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].im;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].re;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].im;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].re;
-#line 3641 "dwf.nw"
+#line 3610 "dwf.nw"
     }
     if ((m & 0x40) == 0) {
         k=6; f=&psi[ps[6]]; g=&gg[6]; 
@@ -6880,7 +6843,7 @@ g->f[0][c].re = f->f[0][c].re + f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im + f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re + f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im + f->f[3][c].im;
-#line 3644 "dwf.nw"
+#line 3613 "dwf.nw"
     }
     if ((m & 0x80) == 0) {
         k=7; f=&psi[ps[7]]; g=&gg[7]; 
@@ -6889,37 +6852,31 @@ g->f[0][c].re = f->f[0][c].re - f->f[2][c].re;
 g->f[0][c].im = f->f[0][c].im - f->f[2][c].im;
 g->f[1][c].re = f->f[1][c].re - f->f[3][c].re;
 g->f[1][c].im = f->f[1][c].im - f->f[3][c].im;
-#line 3647 "dwf.nw"
+#line 3616 "dwf.nw"
     }
 }
-#line 3739 "dwf.nw"
+#line 3708 "dwf.nw"
   
-#line 3537 "dwf.nw"
+#line 3508 "dwf.nw"
 for (d = 0; d < 2*DIM; d++) {
     vHalfFermion * __restrict__ h = &hh[d];
     vSU3 *u = &V[d];
     g = (m & (1 << d))? &nb->rcv_buf[d][ps[d]]: &gg[d];
     
-#line 3545 "dwf.nw"
-for (c = 0; c < Nc; c++) {
-    h->f[0][c].re=u->v[c][0].re*g->f[0][0].re-u->v[c][0].im*g->f[0][0].im
-                 +u->v[c][1].re*g->f[0][1].re-u->v[c][1].im*g->f[0][1].im
-                 +u->v[c][2].re*g->f[0][2].re-u->v[c][2].im*g->f[0][2].im;
-    h->f[0][c].im=u->v[c][0].im*g->f[0][0].re+u->v[c][0].re*g->f[0][0].im
-                 +u->v[c][1].im*g->f[0][1].re+u->v[c][1].re*g->f[0][1].im
-                 +u->v[c][2].im*g->f[0][2].re+u->v[c][2].re*g->f[0][2].im;
-    h->f[1][c].re=u->v[c][0].re*g->f[1][0].re-u->v[c][0].im*g->f[1][0].im
-                 +u->v[c][1].re*g->f[1][1].re-u->v[c][1].im*g->f[1][1].im
-                 +u->v[c][2].re*g->f[1][2].re-u->v[c][2].im*g->f[1][2].im;
-    h->f[1][c].im=u->v[c][0].im*g->f[1][0].re+u->v[c][0].re*g->f[1][0].im
-                 +u->v[c][1].im*g->f[1][1].re+u->v[c][1].re*g->f[1][1].im
-                 +u->v[c][2].im*g->f[1][2].re+u->v[c][2].re*g->f[1][2].im;
+#line 3516 "dwf.nw"
+#define OP(d,c) h->f[d][c].re=u->v[c][0].re*g->f[d][0].re-u->v[c][0].im*g->f[d][0].im \
+ 		             +u->v[c][1].re*g->f[d][1].re-u->v[c][1].im*g->f[d][1].im \
+		             +u->v[c][2].re*g->f[d][2].re-u->v[c][2].im*g->f[d][2].im;\
+		h->f[d][c].im=u->v[c][0].im*g->f[d][0].re+u->v[c][0].re*g->f[d][0].im \
+		             +u->v[c][1].im*g->f[d][1].re+u->v[c][1].re*g->f[d][1].im \
+		             +u->v[c][2].im*g->f[d][2].re+u->v[c][2].re*g->f[d][2].im;
+            LOOP_HALF(LOOP_COLOR, OP)
+#undef OP
+#line 3513 "dwf.nw"
 }
-#line 3542 "dwf.nw"
-}
-#line 3740 "dwf.nw"
+#line 3709 "dwf.nw"
   
-#line 3745 "dwf.nw"
+#line 3714 "dwf.nw"
 rs = &rx5[s];
 for (c = 0; c < Nc; c++) {
     k = 6; 
@@ -6928,62 +6885,62 @@ qs->f[0][c].re = hh[k].f[0][c].re; qs->f[2][c].re = hh[k].f[0][c].re;
 qs->f[0][c].im = hh[k].f[0][c].im; qs->f[2][c].im = hh[k].f[0][c].im;
 qs->f[1][c].re = hh[k].f[1][c].re; qs->f[3][c].re = hh[k].f[1][c].re;
 qs->f[1][c].im = hh[k].f[1][c].im; qs->f[3][c].im = hh[k].f[1][c].im;
-#line 3748 "dwf.nw"
+#line 3717 "dwf.nw"
     k = 7; 
 #line 280 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].im -= hh[k].f[1][c].im;
-#line 3749 "dwf.nw"
+#line 3718 "dwf.nw"
     k = 2; 
 #line 185 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im += hh[k].f[1][c].im;
-#line 3750 "dwf.nw"
+#line 3719 "dwf.nw"
     k = 3; 
 #line 198 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].re += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].im += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].re -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].im -= hh[k].f[1][c].im;
-#line 3751 "dwf.nw"
+#line 3720 "dwf.nw"
     k = 1; 
 #line 157 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re -= hh[k].f[1][c].im;
-#line 3752 "dwf.nw"
+#line 3721 "dwf.nw"
     k = 0; 
 #line 144 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[3][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[3][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[2][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[2][c].re += hh[k].f[1][c].im;
-#line 3753 "dwf.nw"
+#line 3722 "dwf.nw"
     k = 5; 
 #line 239 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im += hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re -= hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im -= hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re += hh[k].f[1][c].im;
-#line 3754 "dwf.nw"
+#line 3723 "dwf.nw"
     k = 4; 
 #line 226 "dwf.nw"
 qs->f[0][c].re += hh[k].f[0][c].re; qs->f[2][c].im -= hh[k].f[0][c].re;
 qs->f[0][c].im += hh[k].f[0][c].im; qs->f[2][c].re += hh[k].f[0][c].im;
 qs->f[1][c].re += hh[k].f[1][c].re; qs->f[3][c].im += hh[k].f[1][c].re;
 qs->f[1][c].im += hh[k].f[1][c].im; qs->f[3][c].re -= hh[k].f[1][c].im;
-#line 3755 "dwf.nw"
+#line 3724 "dwf.nw"
 }
-#line 3741 "dwf.nw"
+#line 3710 "dwf.nw"
 }
-#line 3872 "dwf.nw"
+#line 3841 "dwf.nw"
     
-#line 3917 "dwf.nw"
+#line 3886 "dwf.nw"
 for (s = 0, vbc = vcbn, es1 = &ex5[Sv_1]; s < Sv; s++, vbc = vb) {
     es = &ex5[s];
     rs = &rx5[s];
@@ -6999,7 +6956,7 @@ for (s = 0, vbc = vcbn, es1 = &ex5[Sv_1]; s < Sv; s++, vbc = vb) {
 #undef QXX
     es1 = es;
 }
-#line 3900 "dwf.nw"
+#line 3869 "dwf.nw"
 for (s = Sv, vbc = vbnc, es1 = &ex5[0]; s--; vbc = vb) {
     es = &ex5[s];
     rs = &rx5[s];
@@ -7015,15 +6972,83 @@ for (s = Sv, vbc = vbnc, es1 = &ex5[0]; s--; vbc = vb) {
 #undef QXX
     es1 = es;
 }
-#line 3873 "dwf.nw"
+#line 3842 "dwf.nw"
 }
-#line 3249 "dwf.nw"
+#line 3220 "dwf.nw"
     
-#line 3263 "dwf.nw"
+#line 3234 "dwf.nw"
 #undef qs
 #undef qx5
-#line 3250 "dwf.nw"
+#line 3221 "dwf.nw"
 }
+#line 4195 "dwf.nw"
+#ifndef NO_DEBUG_QMP
+static void
+cleanup_receivers(struct neighbor *nb)
+{
+    int i;
+
+    for (i = 0; i < 2 * DIM; i++) {
+         if (nb->rcv_size[i])
+	     memset(nb->rcv_buf[i],
+                    0x20 + i,
+                    nb->rcv_size[i] * Sv * sizeof (vHalfFermion));
+    }
+}
+
+static void
+cleanup_senders(struct neighbor *nb)
+{
+    int i;
+
+    for (i = 0; i < 2 * DIM; i++) {
+         if (nb->snd_size[i])
+	     memset(nb->snd_buf[i],
+                    0x10 + i,
+                    nb->snd_size[i] * Sv * sizeof (vHalfFermion));
+    }
+}
+
+static void
+dump_buffer(const char *name,
+            const char *type,
+            int         num,
+            void       *ptr,
+            int         size)
+{
+   unsigned char *p = ptr;
+   int count = size * Sv * sizeof (vHalfFermion);
+   int i;
+   char buffer[200];
+   int node = QMP_get_node_number();
+
+   if (count == 0) {
+      printf("[%05d] %s %s[%d]: empty\n", node, name, type, num);
+      return;
+   }
+   for (i = 0; i < count;) {
+       int j = i;
+       int k = 0;
+       for (buffer[0] = 0, k = 0; (k < 16) && (i < count); k++, i++, p++) {
+           char v[10];
+           sprintf(v, " %02x", *p);
+	   strcat(buffer, v);
+       }
+       printf("[%05d] %s %s[%d]: %08x %s\n", node, name, type, num, j, buffer);
+   }
+}
+
+static void
+dump_buffers(const char *name, struct neighbor *nb)
+{
+   int i;
+
+   for (i = 0; i < 2 * DIM; i++)
+       dump_buffer(name, "s", i, nb->snd_buf[i], nb->snd_size[i]);
+   for (i = 0; i < 2 * DIM; i++)
+       dump_buffer(name, "r", i, nb->rcv_buf[i], nb->rcv_size[i]);
+}
+#endif
 #line 592 "dwf.nw"
 int
 L3(DWF_init)(const int lattice[DIM+1],
@@ -7032,7 +7057,7 @@ L3(DWF_init)(const int lattice[DIM+1],
 {
     
 #line 31 "dwf.nw"
-static const char *version = "Version 1.3.0";
+static const char *version = "Version 1.3.2";
 
 #line 599 "dwf.nw"
     if (inited_p)
@@ -7054,7 +7079,7 @@ tlattice[DIM] = lattice[DIM];
 }
 #line 603 "dwf.nw"
     
-#line 1174 "dwf.nw"
+#line 1179 "dwf.nw"
 {
     int i, dn;
     const int *xn, *xc;
@@ -7093,32 +7118,32 @@ else
     tfree = free;
 #line 605 "dwf.nw"
     
-#line 1389 "dwf.nw"
+#line 1394 "dwf.nw"
 if (init_tables()) {
     /* Something went wrong in the table construction */
     goto error;
 }
 #line 606 "dwf.nw"
     
-#line 2196 "dwf.nw"
+#line 2201 "dwf.nw"
 Phi_o  = allocate_odd_fermion();  if (Phi_o == 0) goto error;
 auxA_o = allocate_odd_fermion();  if (auxA_o == 0) goto error;
 auxB_o = allocate_odd_fermion();  if (auxB_o == 0) goto error;
 auxA_e = allocate_even_fermion(); if (auxA_e == 0) goto error;
-#line 2273 "dwf.nw"
+#line 2278 "dwf.nw"
 r_o = allocate_odd_fermion(); if (r_o == 0) goto error;
 p_o = allocate_odd_fermion(); if (p_o == 0) goto error;
 q_o = allocate_odd_fermion(); if (q_o == 0) goto error;
-#line 2294 "dwf.nw"
+#line 2299 "dwf.nw"
 auxB_e = allocate_even_fermion();  if (auxB_e == 0) goto error;
 #line 607 "dwf.nw"
     
-#line 1943 "dwf.nw"
+#line 1948 "dwf.nw"
 if (build_buffers(&even_odd)) goto error;
 if (build_buffers(&odd_even)) goto error;
 #line 608 "dwf.nw"
     
-#line 4097 "dwf.nw"
+#line 4074 "dwf.nw"
 {
    if (QMP_get_node_number() == 0) {
       QMP_printf("DWF init: %s (" MACHINE ")\n", version);
@@ -7142,25 +7167,25 @@ void
 L3(DWF_fini)(void)
 {
     
-#line 2130 "dwf.nw"
+#line 2135 "dwf.nw"
 free_buffers(&even_odd);
 free_buffers(&odd_even);
 #line 675 "dwf.nw"
     
-#line 2202 "dwf.nw"
+#line 2207 "dwf.nw"
 if (auxA_e) free16(auxA_e); auxA_e = 0;
 if (auxB_o) free16(auxB_o); auxB_o = 0;
 if (auxA_o) free16(auxA_o); auxA_o = 0;
 if (Phi_o)  free16(Phi_o);  Phi_o = 0;
-#line 2278 "dwf.nw"
+#line 2283 "dwf.nw"
 if (r_o) free16(r_o); r_o = 0;
 if (p_o) free16(p_o); p_o = 0;
 if (q_o) free16(q_o); q_o = 0;
-#line 2297 "dwf.nw"
+#line 2302 "dwf.nw"
 if (auxB_e) free16(auxB_e); auxB_e = 0;
 #line 676 "dwf.nw"
     
-#line 1831 "dwf.nw"
+#line 1836 "dwf.nw"
 {
     int i;
 
@@ -7233,18 +7258,18 @@ L3(DWF_load_fermion)(const void *OuterFermion,
         return 0;
 
     
-#line 1290 "dwf.nw"
+#line 1295 "dwf.nw"
 {
     int x[DIM+1], i;
     
     
-#line 1235 "dwf.nw"
+#line 1240 "dwf.nw"
 for (i = 0; i < DIM; i++)
     x[i] = bounds.lo[i];
 for (i = 0; i < DIM;) {
-#line 1294 "dwf.nw"
+#line 1299 "dwf.nw"
         
-#line 1301 "dwf.nw"
+#line 1306 "dwf.nw"
 {
     int p = parity(x);
     int p1 = Sv * to_HFlinear(x, &bounds, -1, 0); /* p is taken care of! */
@@ -7263,20 +7288,20 @@ for (i = 0; i < DIM;) {
         }
     }
 }
-#line 1295 "dwf.nw"
+#line 1300 "dwf.nw"
     
-#line 1241 "dwf.nw"
+#line 1246 "dwf.nw"
     for (i = 0; i < DIM; i++) {
         
-#line 1258 "dwf.nw"
+#line 1263 "dwf.nw"
 if (++x[i] == bounds.hi[i])
     x[i] = bounds.lo[i];
 else
     break;
-#line 1243 "dwf.nw"
+#line 1248 "dwf.nw"
     }
 }
-#line 1296 "dwf.nw"
+#line 1301 "dwf.nw"
 }
 
 #line 737 "dwf.nw"
@@ -7295,18 +7320,18 @@ L3(DWF_save_fermion)(void *OuterFermion,
     DEBUG_DWF("Outer fermion=%p, writer=%p\n", OuterFermion, writer)
 
     
-#line 1340 "dwf.nw"
+#line 1345 "dwf.nw"
 {
     int x[DIM+1], i;
     
     
-#line 1235 "dwf.nw"
+#line 1240 "dwf.nw"
 for (i = 0; i < DIM; i++)
     x[i] = bounds.lo[i];
 for (i = 0; i < DIM;) {
-#line 1344 "dwf.nw"
-        
 #line 1349 "dwf.nw"
+        
+#line 1354 "dwf.nw"
 {
     int p = parity(x);
     int p1 = Sv * to_HFlinear(x, &bounds, -1, 0); /* p is taken care of! */
@@ -7325,20 +7350,20 @@ for (i = 0; i < DIM;) {
         }
     }
 }
-#line 1345 "dwf.nw"
+#line 1350 "dwf.nw"
     
-#line 1241 "dwf.nw"
+#line 1246 "dwf.nw"
     for (i = 0; i < DIM; i++) {
         
-#line 1258 "dwf.nw"
+#line 1263 "dwf.nw"
 if (++x[i] == bounds.hi[i])
     x[i] = bounds.lo[i];
 else
     break;
-#line 1243 "dwf.nw"
+#line 1248 "dwf.nw"
     }
 }
-#line 1346 "dwf.nw"
+#line 1351 "dwf.nw"
 }
 #line 755 "dwf.nw"
 }
@@ -7372,18 +7397,18 @@ L3(DWF_load_gauge)(const void *OuterGauge_U,
         return 0;
  
     
-#line 1210 "dwf.nw"
+#line 1215 "dwf.nw"
 {
     int x[DIM], i, d, a, b, p1;
     
     
-#line 1235 "dwf.nw"
+#line 1240 "dwf.nw"
 for (i = 0; i < DIM; i++)
     x[i] = bounds.lo[i];
 for (i = 0; i < DIM;) {
-#line 1214 "dwf.nw"
+#line 1219 "dwf.nw"
         
-#line 1223 "dwf.nw"
+#line 1228 "dwf.nw"
 p1 = to_Ulinear(x, &bounds, -1);
 for (d = 0; d < DIM; d++) {
     for (a = 0; a < Nc; a++) {
@@ -7393,36 +7418,36 @@ for (d = 0; d < DIM; d++) {
         }
     }
 }
-#line 1215 "dwf.nw"
+#line 1220 "dwf.nw"
     
-#line 1241 "dwf.nw"
+#line 1246 "dwf.nw"
     for (i = 0; i < DIM; i++) {
         
-#line 1258 "dwf.nw"
+#line 1263 "dwf.nw"
 if (++x[i] == bounds.hi[i])
     x[i] = bounds.lo[i];
 else
     break;
-#line 1243 "dwf.nw"
+#line 1248 "dwf.nw"
     }
 }
 
-#line 1217 "dwf.nw"
+#line 1222 "dwf.nw"
     for (d = 0; d < DIM; d++)
         
-#line 1266 "dwf.nw"
+#line 1271 "dwf.nw"
 {
     if (network[d] == 1)
         continue;
 
     
-#line 1235 "dwf.nw"
+#line 1240 "dwf.nw"
 for (i = 0; i < DIM; i++)
     x[i] = bounds.lo[i];
 for (i = 0; i < DIM;) {
-#line 1271 "dwf.nw"
+#line 1276 "dwf.nw"
         
-#line 1277 "dwf.nw"
+#line 1282 "dwf.nw"
 p1 = to_Ulinear(x, &bounds, d);
 for (a = 0; a < Nc; a++) {
     for (b = 0; b < Nc; b++) {
@@ -7430,24 +7455,24 @@ for (a = 0; a < Nc; a++) {
         g[p1].v[a][b].im = reader(OuterGauge_V, env, x, d, a, b, 1);
     }
 }
-#line 1272 "dwf.nw"
+#line 1277 "dwf.nw"
     
-#line 1249 "dwf.nw"
+#line 1254 "dwf.nw"
     for (i = 0; i < DIM; i++) {
         if (i == d)
             continue;
         
-#line 1258 "dwf.nw"
+#line 1263 "dwf.nw"
 if (++x[i] == bounds.hi[i])
     x[i] = bounds.lo[i];
 else
     break;
-#line 1253 "dwf.nw"
+#line 1258 "dwf.nw"
     }
 }
-#line 1273 "dwf.nw"
+#line 1278 "dwf.nw"
 }
-#line 1219 "dwf.nw"
+#line 1224 "dwf.nw"
 }
 #line 795 "dwf.nw"
     return g;
@@ -7482,26 +7507,26 @@ L3(DWF_cg_solver)(L3(DWF_Fermion)         *psi,
 
     U = (SU3 *)gauge;    
     
-#line 4052 "dwf.nw"
+#line 4021 "dwf.nw"
 {
     double a = M;
     double b = 2.;
     double c = -2*m_f;
 
     
-#line 2658 "dwf.nw"
+#line 2629 "dwf.nw"
 inv_a = 1.0 / a;
 b_over_a = -b * inv_a;
-#line 2735 "dwf.nw"
+#line 2706 "dwf.nw"
 c0 = 1./(1.-c/b*d_pow(b/a, Sv*Vs));
 vab = vmk_1(d_pow(b/a, Vs));
 vfx_A = vmk_fn(-c0*c/a, -b/a);
 vfx_B = vmk_bn(-b/a, -c0*c/a);
-#line 4058 "dwf.nw"
+#line 4027 "dwf.nw"
 }
 #line 842 "dwf.nw"
     
-#line 2185 "dwf.nw"
+#line 2190 "dwf.nw"
 compute_Qee1(auxA_e, eta->even);
 compute_Qoe(auxB_o, auxA_e);
 compute_sum_o(auxA_o, eta->odd, -1, auxB_o);
@@ -7509,11 +7534,11 @@ compute_Qoo1(auxB_o, auxA_o);
 compute_Mx(Phi_o, auxB_o);
 #line 843 "dwf.nw"
     
-#line 2211 "dwf.nw"
+#line 2216 "dwf.nw"
 status = cg(psi->odd, Phi_o, x0->odd, eps, min_iter, max_iter, out_eps, out_iter);
 #line 844 "dwf.nw"
     
-#line 2286 "dwf.nw"
+#line 2291 "dwf.nw"
 compute_Qeo(auxA_e, psi->odd);
 compute_sum_e(auxB_e, eta->even, -1, auxA_e);
 compute_Qee1(psi->even, auxB_e);
@@ -7586,7 +7611,7 @@ L3(DWF_Add_Fermion)(L3(DWF_Fermion)         *psi,
     collect_add(&psi->odd->f,  &phi->odd->f,  a, &eta->odd->f,  odd_even.size * Sv);
     collect_add(&psi->even->f, &phi->even->f, a, &eta->even->f, even_odd.size * Sv);
 }
-#line 958 "dwf.nw"
+#line 959 "dwf.nw"
 void
 L3(DWF_Fermion_Dot_Product)(double                  *r_re,
 	                    double                  *r_im,
@@ -7596,6 +7621,10 @@ L3(DWF_Fermion_Dot_Product)(double                  *r_re,
     *r_re = *r_im = 0;
     collect_dot(r_re, r_im, &psi->odd->f,  &phi->odd->f,  odd_even.size * Sv);
     collect_dot(r_re, r_im, &psi->even->f, &phi->even->f, even_odd.size * Sv);
+    DEBUG_QMP("before sum re: %g\n", *r_re)
     QMP_sum_double(r_re);
+    DEBUG_QMP("after sum re: %g\n", *r_re)
+    DEBUG_QMP("before sum im: %g\n", *r_im)
     QMP_sum_double(r_im);
+    DEBUG_QMP("after sum im: %g\n", *r_im)
 }

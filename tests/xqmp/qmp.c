@@ -54,7 +54,7 @@ QMP_allocate_aligned_memory (size_t nbytes,
 {
     static int count = 1;
 
-    printf("alloc(%ld) -> mem[%d]\n", (long)nbytes, count);
+    printf("alloc(%ld) -> mem[%2d] ", (long)nbytes, count);
     return (QMP_mem_t *)count++;
 }
 
@@ -63,7 +63,7 @@ static int msg_count = 1;
 QMP_msgmem_t
 QMP_declare_msgmem (const void* mem, size_t nbytes)
 {
-    printf("msgmem(mem[%d]) -> msgmem[%d]\n", (int)mem, msg_count);
+/*     printf("msgmem(mem[%2d]) -> msgmem[%2d]\n", (int)mem, msg_count); */
     return (QMP_msgmem_t)msg_count++;
 }
 
@@ -77,8 +77,8 @@ QMP_declare_multiple (QMP_msghandle_t msgh[],
 
     printf("multiple(%d:", num);
     for (i = 0; i < num; i++)
-	printf(" mh[%d]", (int)msgh[i]);
-    printf(") -> mh[%d]\n", mh_count);
+	printf(" mh[%2d]", (int)msgh[i]);
+    printf(") -> mh[%2d]\n", mh_count);
     return (QMP_msghandle_t)mh_count++;
 }
 
@@ -88,8 +88,11 @@ QMP_declare_receive_relative (QMP_msgmem_t m,
 			      int dir,
 			      int priority)
 {
-    printf("rcv(msgmem[%d], dir[%d], ud[%d]) -> mh[%d]\n",
+/*
+    printf("rcv(msgmem[%2d], dir[%d], ud[%2d]) -> mh[%2d]\n",
 	   (int)m, axis, dir, mh_count);
+*/
+    printf("rcv(dir[%d], ud[%2d]) -> mh[%2d]\n", axis, dir, mh_count);
     return (QMP_msghandle_t)mh_count++;
 }
 
@@ -99,15 +102,18 @@ QMP_declare_send_relative (QMP_msgmem_t m,
 			      int dir,
 			      int priority)
 {
-    printf("snd(msgmem[%d], dir[%d], ud[%d]) -> mh[%d]\n",
+/*
+    printf("snd(msgmem[%2d], dir[%d], ud[%2d]) -> mh[%2d]\n",
 	   (int)m, axis, dir, mh_count);
+*/
+    printf("snd(dir[%d], ud[%2d]) -> mh[%2d]\n", axis, dir, mh_count);
     return (QMP_msghandle_t)mh_count++;
 }
 
 void
 QMP_free_memory (QMP_mem_t* mem)
 {
-    printf("free_mem(%d)\n", (int)mem);
+    printf("free_mem(%2d)\n", (int)mem);
 }
 
 void

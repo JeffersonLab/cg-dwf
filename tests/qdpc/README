@@ -19,7 +19,8 @@ Makefile
 README
 cg-solver.c     -- QDP/C sample with random U
 cg-solver1.c    -- QDP/C sample with U=1
-dwf-op.c        -- DWF Dirac Operator with U=1
+dwf-op.c        -- DWF Dirac Operator with random U
+dwf-op1.c        -- DWF Dirac Operator with U=1
 dwf-run          -- script for applying DWF DO on misc lattice positions
 dwf-run-s        -- same along the S direction
 
