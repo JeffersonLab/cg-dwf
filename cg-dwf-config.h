@@ -1,7 +1,7 @@
 #ifndef CG_DWF_CONFIG_H
 #define CG_DWF_CONFIG_H
 
-#include "cg-dwf-config-indernal.h"
+#include "cg-dwf-config-internal.h"
 #define DWF_PACKAGE PACKAGE
 #define DWF_BUGREPORT BUGREPORT
 #define DWF_PACKAGE_NAME PACKAGE_NAME

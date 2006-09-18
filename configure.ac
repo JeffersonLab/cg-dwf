@@ -29,16 +29,19 @@ sse)
 	AC_MSG_NOTICE([Configuring for SSE architecture])
 	AC_PROG_CC(gcc)
 	DWF_CFLAGS="-Wall -msse2 -DUSE_QMP2"
+	AC_DEFINE([CG_DWF_ARCH_SSE],[],[Set to indicate target arch is SSE])
 	;;
 bluelight)
 	AC_MSG_NOTICE([Configuring for BlueLight architecture])
 	AC_PROG_CC(bgl-gcc gcc)
 	DWF_CFLAGS="-Wall -DUSE_QMP2"
+	AC_DEFINE([CG_DWF_ARCH_BLUELIGHT],[],[Set to indicate target arch is bluelight])
 	;;
 altivec)
 	AC_MSG_NOTICE([Configuring for AltiVec architecture])
 	AC_PROG_CC(gcc)
 	DWF_CFLAGS="-Wall -maltivec -DUSE_QMP2"
+	AC_DEFINE([CG_DWF_ARCH_ALTIVEC],[],[Set to indicate target arch is AltiVec])
 	;;
 *)
 	AC_MSG_ERROR([Unknown cpu architecture. Use --enable-cpu-arch to select a known one])
