@@ -2851,6 +2851,11 @@ fi
 
 
 	DWF_CFLAGS="-Wall -msse2 -DUSE_QMP2"
+
+cat >>confdefs.h <<\_ACEOF
+#define CG_DWF_ARCH_SSE
+_ACEOF
+
 	;;
 bluelight)
 	{ echo "$as_me:$LINENO: Configuring for BlueLight architecture" >&5
@@ -3477,6 +3482,11 @@ fi
 
 
 	DWF_CFLAGS="-Wall -DUSE_QMP2"
+
+cat >>confdefs.h <<\_ACEOF
+#define CG_DWF_ARCH_BLUELIGHT
+_ACEOF
+
 	;;
 altivec)
 	{ echo "$as_me:$LINENO: Configuring for AltiVec architecture" >&5
@@ -4103,6 +4113,11 @@ fi
 
 
 	DWF_CFLAGS="-Wall -maltivec -DUSE_QMP2"
+
+cat >>confdefs.h <<\_ACEOF
+#define CG_DWF_ARCH_ALTIVEC
+_ACEOF
+
 	;;
 *)
 	{ { echo "$as_me:$LINENO: error: Unknown cpu architecture. Use --enable-cpu-arch to select a known one" >&5

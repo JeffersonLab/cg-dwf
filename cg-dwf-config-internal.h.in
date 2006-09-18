@@ -1,5 +1,14 @@
 /* cg-dwf-config-internal.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Set to indicate target arch is AltiVec */
+#undef CG_DWF_ARCH_ALTIVEC
+
+/* Set to indicate target arch is bluelight */
+#undef CG_DWF_ARCH_BLUELIGHT
+
+/* Set to indicate target arch is SSE */
+#undef CG_DWF_ARCH_SSE
+
 /* Name of package */
 #undef PACKAGE
 
