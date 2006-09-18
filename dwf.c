@@ -183,7 +183,7 @@ static int gauge_XYZT;
 static int Sv, Sv_1;
 #line 1449 "dwf.nw"
 static struct neighbor neighbor;
-#ifndef DEBUG_QMP
+#ifdef NO_DEBUG_QMP
 static struct neighbor odd_even;
 static struct neighbor even_odd;
 #else
@@ -615,7 +615,7 @@ vhfzero(vHalfFermion *v)
 static void cleanup_receivers(struct neighbor *nb);
 static void cleanup_senders(struct neighbor *nb);
 static void dump_buffers(const char *name, struct neighbor *nb);
-#endif
+#endif /* !defined(NO_DEBUG_QMP) */
 #line 1080 "dwf.nw"
 static void *
 alloc16(int size)
@@ -711,7 +711,7 @@ init_neighbor(struct bounds *bounds, struct neighbor *neighbor)
     for (i = 0; i < DIM; i++)
        DEBUG_QMP("local: bounds[%d]: lo %d, hi %d\n",
                  i, bounds->lo[i], bounds->hi[i])
-#endif /* defined(DEBUG_QMP) */
+#endif /* defined(NO_DEBUG_QMP) */
     neighbor->qmp_smask = 0;
     
 #line 1507 "dwf.nw"
@@ -895,7 +895,7 @@ mk_sublattice(&xb, xc);
    DEBUG_QMP("par=%d, dir=%d, step=%d\n", par, dir, step)
    for (d = 0; d < DIM; d++)
       DEBUG_QMP("neighbor: xb[%d] lo %d, di %d\n", d, xb.lo[d], xb.hi[d])
-#endif /* defined(DEBUG_QMP) */
+#endif /* !defined(NO_DEBUG_QMP) */
 #line 1741 "dwf.nw"
      
 #line 1772 "dwf.nw"
@@ -967,7 +967,7 @@ mk_sublattice(&xb, xc);
    DEBUG_QMP("par=%d, dir=%d, step=%d\n", par, dir, step)
    for (d = 0; d < DIM; d++)
       DEBUG_QMP("neighbor: xb[%d] lo %d, di %d\n", d, xb.lo[d], xb.hi[d])
-#endif /* defined(DEBUG_QMP) */
+#endif /* !defined(NO_DEBUG_QMP) */
 #line 1807 "dwf.nw"
      
 #line 1772 "dwf.nw"
@@ -1027,7 +1027,7 @@ build_buffers(struct neighbor *nb)
          DEBUG_QMP("[%d]: snd=%d, rcv=%d\n",
 	            i, nb->snd_size[i], nb->rcv_size[i])
     }
-#endif /* defined(DEBUG_QMP) */
+#endif /* !defined(NO_DEBUG_QMP) */
     Nh = nb->Nx = 0;
     for (i = 0; i < DIM; i++) {
         switch (network[i]) {
@@ -7048,7 +7048,7 @@ dump_buffers(const char *name, struct neighbor *nb)
    for (i = 0; i < 2 * DIM; i++)
        dump_buffer(name, "r", i, nb->rcv_buf[i], nb->rcv_size[i]);
 }
-#endif
+#endif /* !defined(NO_DEBUG_QMP) */
 #line 592 "dwf.nw"
 int
 L3(DWF_init)(const int lattice[DIM+1],
@@ -7057,7 +7057,7 @@ L3(DWF_init)(const int lattice[DIM+1],
 {
     
 #line 31 "dwf.nw"
-static const char *version = "Version 1.3.2";
+static const char *version = "Version 1.3.3";
 
 #line 599 "dwf.nw"
     if (inited_p)

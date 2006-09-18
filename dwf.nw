@@ -28,7 +28,7 @@ This version is suboptimal in overlapping communication and computation because
 of defficiencies of the QMP implementation.
 
 <<Version>>=
-static const char *version = "Version 1.3.2";
+static const char *version = "Version 1.3.3";
 @
 \end{abstract}
 
@@ -1447,7 +1447,7 @@ sublattice, another---on the odd. In addition to [[even_odd]] and
 allocated pointers in.
 <<Global variables>>=
 static struct neighbor neighbor;
-#ifndef DEBUG_QMP
+#ifdef NO_DEBUG_QMP
 static struct neighbor odd_even;
 static struct neighbor even_odd;
 #else
@@ -1495,7 +1495,7 @@ init_neighbor(struct bounds *bounds, struct neighbor *neighbor)
     for (i = 0; i < DIM; i++)
        DEBUG_QMP("local: bounds[%d]: lo %d, hi %d\n",
                  i, bounds->lo[i], bounds->hi[i])
-#endif /* defined(DEBUG_QMP) */
+#endif /* defined(NO_DEBUG_QMP) */
     neighbor->qmp_smask = 0;
     <<Compute [[inside_size]] and [[boundary_size]]>>
     <<Allocate [[inside]] table>>
@@ -1765,7 +1765,7 @@ mk_sublattice(&xb, xc);
    DEBUG_QMP("par=%d, dir=%d, step=%d\n", par, dir, step)
    for (d = 0; d < DIM; d++)
       DEBUG_QMP("neighbor: xb[%d] lo %d, di %d\n", d, xb.lo[d], xb.hi[d])
-#endif /* defined(DEBUG_QMP) */
+#endif /* !defined(NO_DEBUG_QMP) */
 @
 The initial point should be on the surface we are walking:
 <<Construct the initial point of the hypersurface>>=
@@ -1973,7 +1973,7 @@ build_buffers(struct neighbor *nb)
          DEBUG_QMP("[%d]: snd=%d, rcv=%d\n",
 	            i, nb->snd_size[i], nb->rcv_size[i])
     }
-#endif /* defined(DEBUG_QMP) */
+#endif /* !defined(NO_DEBUG_QMP) */
     Nh = nb->Nx = 0;
     for (i = 0; i < DIM; i++) {
         switch (network[i]) {
@@ -4187,7 +4187,7 @@ Let us start with prototypes.
 static void cleanup_receivers(struct neighbor *nb);
 static void cleanup_senders(struct neighbor *nb);
 static void dump_buffers(const char *name, struct neighbor *nb);
-#endif
+#endif /* !defined(NO_DEBUG_QMP) */
 @
 And their implementations. The cleanups fills buffers with [[0x1q]] for sends
 and [[0x2q]] for receives, where [[q]] is the direction.
@@ -4258,7 +4258,7 @@ dump_buffers(const char *name, struct neighbor *nb)
    for (i = 0; i < 2 * DIM; i++)
        dump_buffer(name, "r", i, nb->rcv_buf[i], nb->rcv_size[i]);
 }
-#endif
+#endif /* !defined(NO_DEBUG_QMP) */
 @
 
 
