@@ -811,7 +811,7 @@ if test -n "$ac_init_help"; then
 Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-cg-dwf-cpu-arch=cpuarch cpuarc=sse
+  --enable-cg-dwf=<cpuarch> <cpuarch>=sse
 
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
@@ -1942,9 +1942,9 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
           ac_config_headers="$ac_config_headers cg-dwf-config-internal.h"
 
 
-# Check whether --enable-cg-dwf-cpu-arch or --disable-cg-dwf-cpu-arch was given.
-if test "${enable_cg_dwf_cpu_arch+set}" = set; then
-  enableval="$enable_cg_dwf_cpu_arch"
+# Check whether --enable-cg-dwf or --disable-cg-dwf was given.
+if test "${enable_cg_dwf+set}" = set; then
+  enableval="$enable_cg_dwf"
   ac_ARCH=${enableval}
 else
   ac_ARCH="sse"

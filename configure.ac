@@ -10,8 +10,8 @@ AM_INIT_AUTOMAKE
 
 AC_CONFIG_HEADERS([cg-dwf-config-internal.h])
 
-AC_ARG_ENABLE(cg-dwf-cpu-arch,
-	AC_HELP_STRING([--enable-cg-dwf-cpu-arch=cpuarch cpuarc=sse,bluelight,altivec]),
+AC_ARG_ENABLE(cg-dwf,
+	AC_HELP_STRING([--enable-cg-dwf=<cpuarch> <cpuarch>=sse,bluelight,altivec]),
 	[ac_ARCH=${enableval}],
 	[ac_ARCH="sse"]
 )
