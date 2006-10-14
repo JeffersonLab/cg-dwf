@@ -34,6 +34,8 @@ libcg_dwf_a_SOURCES =
 # Header file definition
 include_HEADERS= $(CODE_HDRS)
 
+nodist_include_HEADERS = cg-dwf-config-internal.h
+
 # Architecture dependent construction of list of files to compile
 #
 # -----------------  SSE headers and sources --------------------
