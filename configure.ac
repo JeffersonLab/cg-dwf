@@ -3,6 +3,8 @@ AC_CONFIG_AUX_DIR(autoconfdir)
 
 AC_CANONICAL_HOST
 
+AC_PROG_CC(gcc)
+
 AC_LANG([C])
 AC_PROG_RANLIB
 AC_CHECK_TOOL(AR, ar, [ar])
