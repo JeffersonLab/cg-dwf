@@ -24,7 +24,7 @@ dnl               if QMP_FUNC is empty, assume linking with basic MPI program.
 dnl               i.e. check if QMP definitions are valid
 dnl
 AC_DEFUN(
-  PAC_QMP_LINK_CC_FUNC,
+  PAC_QMP_COMPILE_CC_FUNC,
   [
 dnl - set local parallel compiler environments
 dnl   so input variables can be CFLAGS, LDFLAGS or LIBS
@@ -40,15 +40,16 @@ dnl - set the parallel compiler environment
     CFLAGS="$CFLAGS $pac_QMP_CFLAGS"
     LDFLAGS="$LDFLAGS $pac_QMP_LDFLAGS"
     LIBS="$LIBS $pac_QMP_LIBS"
-    AC_TRY_LINK(
-      [#include "qmp.h"],
-      [
-        int argc ; char **argv ;
+    AC_COMPILE_IFELSE(
+      [#include "qmp.h"
+	int main() {
+      	int argc ; char **argv ;
         QMP_thread_level_t prv;
-        $4 ;
-        QMP_init_msg_passing(&argc, &argv, QMP_THREAD_SINGLE, &prv) ;
-        $5 ;
+	$4;
+      	QMP_init_msg_passing(&argc, &argv, QMP_THREAD_SINGLE, &prv) ;
+	$5;
         QMP_finalize_msg_passing() ;
+	}
       ],
       [pac_qmp_working=yes],
       [pac_qmp_working=no]

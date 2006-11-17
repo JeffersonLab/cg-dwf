@@ -24,7 +24,7 @@ cg_dwf_ar="@AR@"
 cg_dwf_cpuarch=@DWF_CPUARCH@
 
 cg_dwf_baseincludedir=@includedir@
-cg_dwf_baselibdir=@libdir@
+cg_dwf_baselibdir=@prefix@
 
 usage()
 {
@@ -129,7 +129,7 @@ if test "X${echo_ldflags}X" = "XyesX" ; then
           output_ldflags=${output_ldflags}" -L"${prefix}"/lib"
       fi
   else
-      output_ldflags=${output_ldflags}" -L"${cg_dwf_baselibdir}
+      output_ldflags=${output_ldflags}" -L"${prefix}"/lib"
   fi
   echo $output_ldflags
 fi

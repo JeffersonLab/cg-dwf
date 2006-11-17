@@ -9,6 +9,9 @@
 /* Set to indicate target arch is SSE */
 #undef CG_DWF_ARCH_SSE
 
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
+
 /* Name of package */
 #undef PACKAGE
 

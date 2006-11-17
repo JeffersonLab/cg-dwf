@@ -1,9 +1,10 @@
 AC_INIT(cg-dwf, 1.3.3,[avp@lns.mit.edu])
 AC_CONFIG_AUX_DIR(autoconfdir)
 
-AC_CANONICAL_HOST
+dnl removed so that powerpc-bgl-blrts-gnu will work
+dnl AC_CANONICAL_HOST
 
-AC_PROG_CC(gcc)
+AC_PROG_CC_C_O([bgl-gcc gcc])
 
 AC_LANG([C])
 AC_PROG_RANLIB
@@ -29,19 +30,16 @@ AC_ARG_WITH(qmp,
 case ${ac_ARCH} in
 sse)
 	AC_MSG_NOTICE([Configuring for SSE architecture])
-	AC_PROG_CC(gcc)
 	DWF_CFLAGS="-Wall -msse2 -DUSE_QMP2"
 	AC_DEFINE([CG_DWF_ARCH_SSE],[],[Set to indicate target arch is SSE])
 	;;
 bluelight)
 	AC_MSG_NOTICE([Configuring for BlueLight architecture])
-	AC_PROG_CC(bgl-gcc gcc)
 	DWF_CFLAGS="-Wall -DUSE_QMP2"
 	AC_DEFINE([CG_DWF_ARCH_BLUELIGHT],[],[Set to indicate target arch is bluelight])
 	;;
 altivec)
 	AC_MSG_NOTICE([Configuring for AltiVec architecture])
-	AC_PROG_CC(gcc)
 	DWF_CFLAGS="-Wall -maltivec -DUSE_QMP2"
 	AC_DEFINE([CG_DWF_ARCH_ALTIVEC],[],[Set to indicate target arch is AltiVec])
 	;;
@@ -76,22 +74,22 @@ else
         before configure])
 fi
 dnl verify we can compile and link against QMP, if needed
-PAC_QMP_LINK_CC_FUNC(
+PAC_QMP_COMPILE_CC_FUNC(
   [${QMP_CFLAGS}],
   [${QMP_LDFLAGS}],
   [${QMP_LIBS}],
   ,
   ,
-  [qmp_link_ok=yes],
-  [qmp_link_ok=no]
+  [qmp_compile_ok=yes],
+  [qmp_compile_ok=no]
 )
 
-AC_MSG_CHECKING([if we can compile/link of a simple QMP C program])
-if test "X${qmp_link_ok}X" = "XyesX" ; then
+AC_MSG_CHECKING([if we can compile  of a simple QMP C program])
+if test "X${qmp_compile_ok}X" = "XyesX" ; then
    AC_MSG_RESULT(yes)
 else
    AC_MSG_RESULT(no)
-   AC_MSG_ERROR([Cannot compile/link a basic QMP C++ program!
+   AC_MSG_ERROR([Cannot compile a basic QMP C++ program!
         Check QMP_CFLAGS, QMP_LDFLAGS, QMP_LIBS.])
 fi
 
