@@ -35,7 +35,7 @@ sse)
 	;;
 bluelight)
 	AC_MSG_NOTICE([Configuring for BlueLight architecture])
-	DWF_CFLAGS="-Wall -DUSE_QMP2"
+	DWF_CFLAGS="-Wall -mbluelight -DUSE_QMP2"
 	AC_DEFINE([CG_DWF_ARCH_BLUELIGHT],[],[Set to indicate target arch is bluelight])
 	;;
 altivec)
