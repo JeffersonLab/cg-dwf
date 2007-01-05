@@ -72,6 +72,19 @@ int L3(DWF_cg_solver)(L3(DWF_Fermion)       *result,
                       double                 eps,
                       int                    min_iter,
                       int                    max_iter);
+
+int L3(DWF_cg_solver_timings)(L3(DWF_Fermion)       *result,
+                      double                *out_eps,
+                      int                   *out_iter,
+                      const L3(DWF_Gauge)   *gauge,
+                      double                 M_0,
+                      double                 m_f,
+                      const L3(DWF_Fermion) *guess,
+                      const L3(DWF_Fermion) *rhs,
+                      double                 eps,
+                      int                    min_iter,
+                      int                    max_iter);
+
 #line 373 "interface.nw"
 void L3(DWF_Dirac_Operator)(L3(DWF_Fermion)        *chi,
                             const L3(DWF_Gauge)    *gauge,

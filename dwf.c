@@ -449,6 +449,16 @@ static int cg(vOddFermion *psi,
               int max_iter,
               double *out_eps,
               int *out_iter);
+
+static int cg_timings(vOddFermion *psi,
+              const vOddFermion *b,
+              const vOddFermion *x0,
+              double epsilon,
+              int min_iter,
+              int max_iter,
+              double *out_eps,
+              int *out_iter);
+
 #line 2308 "dwf.nw"
 static void copy_o(vOddFermion *dst, const vOddFermion *src);
 #line 2324 "dwf.nw"
@@ -1227,6 +1237,46 @@ cg(vOddFermion *x_o,
             break;
         }
 	beta = gamma / rho;
+	rho = gamma;
+	compute_sum2x_o(p_o, r_o, beta);
+    }
+    *out_N = k;
+    *out_eps = rho;
+
+    return status;
+}
+
+static int
+cg_timings(vOddFermion *x_o,
+   const vOddFermion *b,
+   const vOddFermion *x0,
+   double epsilon,
+   int N0,
+   int N,
+   double *out_eps,
+   int *out_N)
+{
+    double rho, alpha, beta, gamma, norm_z;
+    int status = 0;
+    int k;
+
+    copy_o(x_o, x0);
+    compute_MxM(p_o, &norm_z, x_o);
+    compute_sum_oN(r_o, &rho, b, -1, p_o);
+    copy_o(p_o, r_o);
+    
+/* relax, QMP does not support split reductions yet. */
+
+    for (k = 0; k < N; k++) {
+        compute_MxM(q_o, &norm_z, p_o);
+        
+/* relax, QMP does not support split reductions yet. */
+        alpha = 1.0;
+        compute_sum2_oN(r_o, &gamma, -alpha, q_o);
+        compute_sum2_o(x_o, alpha, p_o);
+        
+/* relax, QMP does not support split reductions yet. */
+   	beta = 1.0;
 	rho = gamma;
 	compute_sum2x_o(p_o, r_o, beta);
     }
@@ -7545,7 +7595,62 @@ compute_Qee1(psi->even, auxB_e);
 #line 845 "dwf.nw"
     return status;
 }
-#line 860 "dwf.nw"
+
+int
+L3(DWF_cg_solver_timings)(L3(DWF_Fermion)         *psi,
+                  double                  *out_eps,
+                  int                     *out_iter,
+                  const L3(DWF_Gauge)     *gauge,
+                  double                   M,
+                  double                   m_f,
+                  const L3(DWF_Fermion)   *x0,
+                  const L3(DWF_Fermion)   *eta,
+                  double                   eps,
+                  int                      min_iter,
+                  int                      max_iter)
+{
+    int status;
+
+    if (!inited_p)
+        return 1;
+
+    U = (SU3 *)gauge;    
+    
+    {
+      double a = M;
+      double b = 2.;
+      double c = -2*m_f;
+
+    
+
+      inv_a = 1.0 / a;
+      b_over_a = -b * inv_a;
+      
+      c0 = 1./(1.-c/b*d_pow(b/a, Sv*Vs));
+      vab = vmk_1(d_pow(b/a, Vs));
+      vfx_A = vmk_fn(-c0*c/a, -b/a);
+      vfx_B = vmk_bn(-b/a, -c0*c/a);
+      
+    }
+
+    compute_Qee1(auxA_e, eta->even);
+    compute_Qoe(auxB_o, auxA_e);
+    compute_sum_o(auxA_o, eta->odd, -1, auxB_o);
+    compute_Qoo1(auxB_o, auxA_o);
+    compute_Mx(Phi_o, auxB_o);
+
+    
+
+    status = cg_timings(psi->odd, Phi_o, x0->odd, eps, min_iter, max_iter, out_eps, out_iter);
+    
+    compute_Qeo(auxA_e, psi->odd);
+    compute_sum_e(auxB_e, eta->even, -1, auxA_e);
+    compute_Qee1(psi->even, auxB_e);
+
+    return status;
+}
+
+
 void
 L3(DWF_Dirac_Operator)(L3(DWF_Fermion)         *chi,
                        const L3(DWF_Gauge)     *gauge,

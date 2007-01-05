@@ -101,5 +101,4 @@ AM_CONDITIONAL(ARCH_ALTIVEC, [test "X${ac_ARCH}X" = "XaltivecX"])
 
 AC_CONFIG_FILES([cg-dwf-config],[chmod u+x cg-dwf-config])
 AC_CONFIG_FILES([Makefile])
-
 AC_OUTPUT
