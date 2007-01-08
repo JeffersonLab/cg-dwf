@@ -76,8 +76,8 @@ AM_CFLAGS=$(INCFLAGS) $(DWF_CFLAGS) $(QMP_CFLAGS)
 
 bin_PROGRAMS = t_dwf_cg2
 
-AM_LDFLAGS = -L. @QMP_LDFLAGS@
+AM_LDFLAGS = -L@builddir@ @QMP_LDFLAGS@
 LDADD      = -lcg-dwf @QMP_LIBS@ -lm
 
 t_dwf_cg2_SOURCES = t_dwf_cg2.c
-
+t_dwf_cg2_DEPENDENCIES = libcg-dwf.a
