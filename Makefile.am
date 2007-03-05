@@ -74,7 +74,7 @@ QMP_CFLAGS=@QMP_CFLAGS@
 # Add it all onto the automake list of flags
 AM_CFLAGS=$(INCFLAGS) $(DWF_CFLAGS) $(QMP_CFLAGS)
 
-bin_PROGRAMS = t_dwf_cg2
+EXTRA_PROGRAMS = t_dwf_cg2
 
 AM_LDFLAGS = -L@builddir@ @QMP_LDFLAGS@
 LDADD      = -lcg-dwf @QMP_LIBS@ -lm
