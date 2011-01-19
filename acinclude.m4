@@ -40,7 +40,7 @@ dnl - set the parallel compiler environment
     CFLAGS="$CFLAGS $pac_QMP_CFLAGS"
     LDFLAGS="$LDFLAGS $pac_QMP_LDFLAGS"
     LIBS="$LIBS $pac_QMP_LIBS"
-    AC_COMPILE_IFELSE(
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE(
       [#include "qmp.h"
 	int main() {
       	int argc ; char **argv ;
@@ -50,7 +50,7 @@ dnl - set the parallel compiler environment
 	$5;
         QMP_finalize_msg_passing() ;
 	}
-      ],
+      ])],
       [pac_qmp_working=yes],
       [pac_qmp_working=no]
     )
